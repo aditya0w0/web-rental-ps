@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.btn { @apply inline-flex items-center justify-center px-4 py-2 rounded-md font-medium transition duration-150; }
+.btn-primary { @apply bg-gradient-to-r from-pink-500 via-fuchsia-500 to-purple-600 text-white hover:from-pink-600 hover:via-fuchsia-600 hover:to-purple-700; }
+.btn-outline { @apply border border-fuchsia-500 text-fuchsia-700 hover:bg-pink-50; }
+.btn-light { @apply bg-pink-50 text-fuchsia-700 hover:bg-rose-100; }
+.btn-ghost { @apply text-white/90 hover:text-white underline-offset-4 hover:underline; }
+.card { @apply bg-white shadow rounded-lg; }
+.card-header { @apply p-6 border-b; }
+.card-body { @apply p-6; }
+.badge { @apply px-2 py-1 rounded-full text-xs font-semibold; }
+.badge-success { @apply bg-green-200 text-green-800; }
+.badge-warning { @apply bg-yellow-200 text-yellow-800; }
+.badge-danger { @apply bg-red-200 text-red-800; }
+.soft-gradient { @apply bg-gradient-to-r from-pink-400 via-rose-300 to-purple-600; }
+.link { @apply text-fuchsia-700 hover:text-fuchsia-900; }
+
+.overlay-dots { background-image: radial-gradient(rgba(255,255,255,0.15) 1px, transparent 1px); background-size: 12px 12px; }
+.overlay-soft { background: radial-gradient(1200px 400px at 80% 20%, rgba(255,255,255,0.15), transparent 60%), radial-gradient(800px 300px at 10% 80%, rgba(255,255,255,0.1), transparent 60%); }
+
+.hero-gradient { @apply bg-gradient-to-br from-pink-400 via-rose-300 to-purple-700; }
+.btn-gradient { @apply bg-gradient-to-r from-pink-500 via-fuchsia-500 to-purple-600 text-white hover:from-pink-600 hover:via-fuchsia-600 hover:to-purple-700; }
+.btn-outline-dark { @apply border border-white/20 text-white/90 hover:bg-white/10; }
+
+.text-gradient-animate { background-image: linear-gradient(90deg,#ff9aa2,#fad0c4,#c471ed,#f64f59); background-size: 300% 300%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: gradientMove 8s linear infinite; }
+@keyframes gradientMove { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+
+.gradient-ring { position: absolute; inset: auto; background: conic-gradient(from 0deg, #ff9aa2, #fad0c4, #c471ed, #a18cd1, #ff9aa2); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 8px), black 0); mask: radial-gradient(farthest-side, transparent calc(100% - 8px), black 0); border-radius: 9999px; opacity: .7; }
+
+.scroll-strip { position: relative; overflow: hidden; }
+.scroll-track { display: flex; gap: 16px; animation: marquee 20s linear infinite; }
+.scroll-item { flex: 0 0 auto; width: 240px; height: 160px; border-radius: .75rem; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,.35); }
+@keyframes marquee { 0%{ transform: translateX(0) } 100%{ transform: translateX(-50%) } }
+.nav-gradient { background: linear-gradient(90deg,#ff9aa2 0%, #fad0c4 45%, #9b72cf 100%); }
+
+/* Global override for legacy green utilities */
+.bg-green-600 { background: linear-gradient(90deg,#ff9aa2 0%, #fad0c4 50%, #9b72cf 100%) !important; }
+.hover\:bg-green-700:hover { background: linear-gradient(90deg,#ff9aa2 0%, #f8bfcf 50%, #8b5fd5 100%) !important; }
+.border-green-700 { border-color: #9b72cf !important; }
+.text-green-700, .text-emerald-700 { color: #9b72cf !important; }
+.bg-green-50, .bg-green-100 { background-color: #fde7ee !important; }
+
+/* Animated particles */
+.particles { position:absolute; inset:0; pointer-events:none; z-index:1; background-image: radial-gradient(rgba(255,255,255,.08) 1px, transparent 1px), radial-gradient(rgba(255,255,255,.06) 1px, transparent 1px); background-size: 24px 24px, 36px 36px; background-position: 0 0, 12px 18px; animation: particlesShift 20s linear infinite; }
+@keyframes particlesShift { 0%{ background-position:0 0, 12px 18px } 100%{ background-position: 200px 0, 212px 18px } }

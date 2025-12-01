@@ -1,0 +1,234 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1700" height="1800" viewBox="0 0 1700 1800">
+<defs>
+  <style><![CDATA[
+    .title{font: bold 28px/32px Arial, Helvetica, sans-serif; fill:#111}
+    .subtitle{font: bold 18px/22px Arial, Helvetica, sans-serif; fill:#333}
+    .label{font: 14px/18px Arial, Helvetica, sans-serif; fill:#555}
+    .value{font: 14px/18px Arial, Helvetica, sans-serif; fill:#111}
+    .box{fill:#fff; stroke:#999; stroke-width:2; rx:10; ry:10}
+    .header{fill:#f5f7ff;}
+    .colline{stroke:#ddd; stroke-width:1}
+    .arrow{stroke:#6b46c1; stroke-width:2; fill:none}
+  ]]></style>
+  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+    <polygon points="0 0, 10 3.5, 0 7" fill="#6b46c1"/>
+  </marker>
+</defs>
+
+<text x="850" y="40" text-anchor="middle" class="title">Unified Flowchart — User & Admin</text>
+<text x="850" y="70" text-anchor="middle" class="label">Per langkah ditampilkan sebagai tabel, dihubungkan dengan panah</text>
+
+<text x="420" y="110" text-anchor="middle" class="subtitle">User Flow</text>
+<text x="1280" y="110" text-anchor="middle" class="subtitle">Admin Flow</text>
+
+<!-- Central role-aware dashboard decision -->
+<rect x="500" y="90" width="700" height="140" class="box"/>
+<rect x="500" y="90" width="700" height="40" class="header"/>
+<line x1="660" y1="130" x2="660" y2="230" class="colline"/>
+<text x="520" y="116" class="label">Step</text>
+<text x="680" y="116" class="value">Autentikasi & Dashboard (role-aware)</text>
+<text x="520" y="156" class="label">Route</text>
+<text x="680" y="156" class="value">GET `/dashboard`</text>
+<text x="520" y="196" class="label">Controller</text>
+<text x="680" y="196" class="value">Admin: `Admin\DashboardController@index` · User: `UserDashboardController@index`</text>
+
+<!-- USER: Home -->
+<rect x="40" y="140" width="740" height="160" class="box"/>
+<rect x="40" y="140" width="740" height="40" class="header"/>
+<line x1="200" y1="180" x2="200" y2="300" class="colline"/>
+<text x="60" y="166" class="label">Step</text>
+<text x="220" y="166" class="value">Home</text>
+<text x="60" y="206" class="label">Route</text>
+<text x="220" y="206" class="value">GET `/` → name `home`</text>
+<text x="60" y="246" class="label">Controller</text>
+<text x="220" y="246" class="value">`HomeController@index`</text>
+<text x="60" y="286" class="label">Outcome</text>
+<text x="220" y="286" class="value">Landing + akses ke katalog & sewa</text>
+
+<!-- USER: Browse Products -->
+<rect x="40" y="330" width="740" height="200" class="box"/>
+<rect x="40" y="330" width="740" height="40" class="header"/>
+<line x1="200" y1="370" x2="200" y2="530" class="colline"/>
+<text x="60" y="356" class="label">Step</text>
+<text x="220" y="356" class="value">Browse Produk</text>
+<text x="60" y="396" class="label">Route</text>
+<text x="220" y="396" class="value">GET `/playstation` · GET `/accessories`</text>
+<text x="60" y="436" class="label">Controller</text>
+<text x="220" y="436" class="value">`ProductController@playstation` · `@accessories`</text>
+<text x="60" y="476" class="label">Outcome</text>
+<text x="220" y="476" class="value">Pilih item → tambah ke cart</text>
+
+<!-- USER: Cart -->
+<rect x="40" y="540" width="740" height="220" class="box"/>
+<rect x="40" y="540" width="740" height="40" class="header"/>
+<line x1="200" y1="580" x2="200" y2="760" class="colline"/>
+<text x="60" y="566" class="label">Step</text>
+<text x="220" y="566" class="value">Cart</text>
+<text x="60" y="606" class="label">Route</text>
+<text x="220" y="606" class="value">GET `/cart` · POST `/cart/add` · PATCH `/cart/update/{item}` · DELETE `/cart/remove/{item}`</text>
+<text x="60" y="646" class="label">Controller</text>
+<text x="220" y="646" class="value">`CartController@index|add|update|remove`</text>
+<text x="60" y="686" class="label">Outcome</text>
+<text x="220" y="686" class="value">Kelola item & lanjut ke checkout</text>
+
+<!-- USER: Checkout -->
+<rect x="40" y="770" width="740" height="240" class="box"/>
+<rect x="40" y="770" width="740" height="40" class="header"/>
+<line x1="200" y1="810" x2="200" y2="1010" class="colline"/>
+<text x="60" y="796" class="label">Step</text>
+<text x="220" y="796" class="value">Checkout</text>
+<text x="60" y="836" class="label">Route</text>
+<text x="220" y="836" class="value">GET `/cart/checkout` · POST `/cart/checkout`</text>
+<text x="60" y="876" class="label">Controller</text>
+<text x="220" y="876" class="value">`CartController@checkoutForm` · `@checkout`</text>
+<text x="60" y="916" class="label">Detail</text>
+<text x="220" y="916" class="value">Validasi kota kirim (`pemalang|batang|pekalongan`), buat `Order`, redirect ke bayar</text>
+
+<!-- USER: Order Payment -->
+<rect x="40" y="1010" width="740" height="240" class="box"/>
+<rect x="40" y="1010" width="740" height="40" class="header"/>
+<line x1="200" y1="1050" x2="200" y2="1250" class="colline"/>
+<text x="60" y="1036" class="label">Step</text>
+<text x="220" y="1036" class="value">Pembayaran Order</text>
+<text x="60" y="1076" class="label">Route</text>
+<text x="220" y="1076" class="value">GET `/orders/{order}/payment` · PATCH `/orders/{order}/payment`</text>
+<text x="60" y="1116" class="label">Controller</text>
+<text x="220" y="1116" class="value">`OrderController@payment` · `@processPayment`</text>
+<text x="60" y="1156" class="label">Outcome</text>
+<text x="220" y="1156" class="value">Upload bukti, status tetap `pending` sampai diverifikasi admin</text>
+
+<!-- USER: Tracking -->
+<rect x="40" y="1260" width="740" height="220" class="box"/>
+<rect x="40" y="1260" width="740" height="40" class="header"/>
+<line x1="200" y1="1300" x2="200" y2="1480" class="colline"/>
+<text x="60" y="1286" class="label">Step</text>
+<text x="220" y="1286" class="value">Tracking Order</text>
+<text x="60" y="1326" class="label">Route</text>
+<text x="220" y="1326" class="value">GET `/track` · POST `/track`</text>
+<text x="60" y="1366" class="label">Controller</text>
+<text x="220" y="1366" class="value">`TransactionStatusController@track`</text>
+<text x="60" y="1406" class="label">Outcome</text>
+<text x="220" y="1406" class="value">Lihat status, payment_date, fulfillment & tracking_number</text>
+
+<!-- USER: Rentals -->
+<rect x="40" y="1490" width="740" height="260" class="box"/>
+<rect x="40" y="1490" width="740" height="40" class="header"/>
+<line x1="200" y1="1530" x2="200" y2="1750" class="colline"/>
+<text x="60" y="1516" class="label">Step</text>
+<text x="220" y="1516" class="value">Rental (Sewa PS)</text>
+<text x="60" y="1556" class="label">Route</text>
+<text x="220" y="1556" class="value">GET `/rent/{type}` · POST `/rent/{type}` · GET/PATCH `/rentals/{rental}/payment`</text>
+<text x="60" y="1596" class="label">Controller</text>
+<text x="220" y="1596" class="value">`UserRentalController@create|store|payment|processPayment`</text>
+<text x="60" y="1636" class="label">Outcome</text>
+<text x="220" y="1636" class="value">Unit dialokasikan, upload bukti, admin confirm → `confirmed/active` → `completed`</text>
+
+<!-- ADMIN: Dashboard -->
+<rect x="900" y="140" width="740" height="180" class="box"/>
+<rect x="900" y="140" width="740" height="40" class="header"/>
+<line x1="1060" y1="180" x2="1060" y2="320" class="colline"/>
+<text x="920" y="166" class="label">Step</text>
+<text x="1080" y="166" class="value">Admin Dashboard</text>
+<text x="920" y="206" class="label">Route</text>
+<text x="1080" y="206" class="value">GET `/admin/dashboard`</text>
+<text x="920" y="246" class="label">Controller</text>
+<text x="1080" y="246" class="value">`Admin\DashboardController@index`</text>
+<text x="920" y="286" class="label">Outcome</text>
+<text x="1080" y="286" class="value">Statistik rentals, orders, revenue, recent activity</text>
+
+<!-- ADMIN: Orders -->
+<rect x="900" y="330" width="740" height="220" class="box"/>
+<rect x="900" y="330" width="740" height="40" class="header"/>
+<line x1="1060" y1="370" x2="1060" y2="550" class="colline"/>
+<text x="920" y="356" class="label">Step</text>
+<text x="1080" y="356" class="value">Kelola Orders</text>
+<text x="920" y="396" class="label">Route</text>
+<text x="1080" y="396" class="value">GET `/admin/orders` · GET `/admin/orders/{order}`</text>
+<text x="920" y="436" class="label">Controller</text>
+<text x="1080" y="436" class="value">`Admin\OrderController@index|show`</text>
+<text x="920" y="476" class="label">Outcome</text>
+<text x="1080" y="476" class="value">Review detail order & bukti pembayaran</text>
+
+<!-- ADMIN: Verify Payment -->
+<rect x="900" y="560" width="740" height="220" class="box"/>
+<rect x="900" y="560" width="740" height="40" class="header"/>
+<line x1="1060" y1="600" x2="1060" y2="780" class="colline"/>
+<text x="920" y="586" class="label">Step</text>
+<text x="1080" y="586" class="value">Verifikasi Pembayaran Order</text>
+<text x="920" y="626" class="label">Route</text>
+<text x="1080" y="626" class="value">PATCH `/admin/orders/{order}/confirm` · PATCH `/admin/orders/{order}/reject`</text>
+<text x="920" y="666" class="label">Controller</text>
+<text x="1080" y="666" class="value">`Admin\OrderController@confirmPayment|rejectPayment`</text>
+<text x="920" y="706" class="label">Outcome</text>
+<text x="1080" y="706" class="value">Set status: `paid` atau `failed` + reason</text>
+
+<!-- ADMIN: Fulfillment & Tracking -->
+<rect x="900" y="790" width="740" height="240" class="box"/>
+<rect x="900" y="790" width="740" height="40" class="header"/>
+<line x1="1060" y1="830" x2="1060" y2="1030" class="colline"/>
+<text x="920" y="816" class="label">Step</text>
+<text x="1080" y="816" class="value">Fulfillment & Tracking</text>
+<text x="920" y="856" class="label">Route</text>
+<text x="1080" y="856" class="value">PATCH `/admin/orders/{order}/fulfillment` · PATCH `/admin/orders/{order}/tracking`</text>
+<text x="920" y="896" class="label">Controller</text>
+<text x="1080" y="896" class="value">`Admin\OrderController@updateFulfillment|updateTracking`</text>
+<text x="920" y="936" class="label">Outcome</text>
+<text x="1080" y="936" class="value">Ubah ke `processing|shipped|ready_for_pickup|completed`; isi `tracking_number`</text>
+
+<!-- ADMIN: Rentals -->
+<rect x="900" y="1040" width="740" height="260" class="box"/>
+<rect x="900" y="1040" width="740" height="40" class="header"/>
+<line x1="1060" y1="1080" x2="1060" y2="1300" class="colline"/>
+<text x="920" y="1066" class="label">Step</text>
+<text x="1080" y="1066" class="value">Kelola Rentals</text>
+<text x="920" y="1106" class="label">Route</text>
+<text x="1080" y="1106" class="value">CRUD `/admin/rentals` · PATCH confirm/reject/fulfillment · set-active/completed</text>
+<text x="920" y="1146" class="label">Controller</text>
+<text x="1080" y="1146" class="value">`Admin\RentalController@*`</text>
+<text x="920" y="1186" class="label">Outcome</text>
+<text x="1080" y="1186" class="value">Konfirmasi pembayaran, atur `delivering|ready_for_pickup|completed`, ubah status unit</text>
+
+<!-- ADMIN: Master Data & Reports -->
+<rect x="900" y="1310" width="740" height="240" class="box"/>
+<rect x="900" y="1310" width="740" height="40" class="header"/>
+<line x1="1060" y1="1350" x2="1060" y2="1550" class="colline"/>
+<text x="920" y="1336" class="label">Step</text>
+<text x="1080" y="1336" class="value">Master Data & Laporan</text>
+<text x="920" y="1376" class="label">Route</text>
+<text x="1080" y="1376" class="value">CRUD Types/Units/Accessories/Articles/Shipping; GET `/reports`, `/reports/pdf`, `/reports/excel`</text>
+<text x="920" y="1416" class="label">Controller</text>
+<text x="1080" y="1416" class="value">`Admin\PlaystationTypeController` · `Admin\PlaystationUnitController` · `Admin\AccessoryController` · `Admin\ArticleController` · `Admin\ShippingRateController` · `ReportController`</text>
+<text x="920" y="1456" class="label">Outcome</text>
+<text x="1080" y="1456" class="value">Kelola master & ekspor laporan PDF/Excel</text>
+
+<!-- Arrows -->
+<line x1="850" y1="230" x2="410" y2="230" class="arrow" marker-end="url(#arrowhead)"/>
+<line x1="850" y1="230" x2="1290" y2="230" class="arrow" marker-end="url(#arrowhead)"/>
+
+<line x1="410" y1="300" x2="410" y2="330" class="arrow" marker-end="url(#arrowhead)"/>
+<line x1="410" y1="530" x2="410" y2="540" class="arrow" marker-end="url(#arrowhead)"/>
+<line x1="410" y1="760" x2="410" y2="770" class="arrow" marker-end="url(#arrowhead)"/>
+<line x1="410" y1="1010" x2="410" y2="1010" class="arrow" marker-end="url(#arrowhead)"/>
+<line x1="410" y1="1250" x2="410" y2="1260" class="arrow" marker-end="url(#arrowhead)"/>
+<line x1="410" y1="1480" x2="410" y2="1490" class="arrow" marker-end="url(#arrowhead)"/>
+
+<line x1="1280" y1="320" x2="1280" y2="330" class="arrow" marker-end="url(#arrowhead)"/>
+<line x1="1280" y1="550" x2="1280" y2="560" class="arrow" marker-end="url(#arrowhead)"/>
+<line x1="1280" y1="780" x2="1280" y2="790" class="arrow" marker-end="url(#arrowhead)"/>
+<line x1="1280" y1="1030" x2="1280" y2="1040" class="arrow" marker-end="url(#arrowhead)"/>
+<line x1="1280" y1="1300" x2="1280" y2="1310" class="arrow" marker-end="url(#arrowhead)"/>
+
+<!-- Cross-links: User payment -> Admin verify; Admin fulfillment -> User tracking; Rentals linkage -->
+<line x1="780" y1="1180" x2="900" y2="670" class="arrow" marker-end="url(#arrowhead)"/>
+<text x="820" y="940" class="label" transform="rotate(-56 820 940)">Bukti bayar → verifikasi admin</text>
+
+<line x1="900" y1="910" x2="780" y2="1370" class="arrow" marker-end="url(#arrowhead)"/>
+<text x="860" y="1140" class="label" transform="rotate(64 860 1140)">Fulfillment & tracking → terlihat di tracking</text>
+
+<line x1="780" y1="1650" x2="900" y2="1160" class="arrow" marker-end="url(#arrowhead)"/>
+<text x="830" y="1420" class="label" transform="rotate(-60 830 1420)">Pembayaran rental → verifikasi admin</text>
+
+<line x1="900" y1="1220" x2="780" y2="1700" class="arrow" marker-end="url(#arrowhead)"/>
+<text x="860" y="1520" class="label" transform="rotate(64 860 1520)">Status rental → aktif/completed</text>
+
+</svg>

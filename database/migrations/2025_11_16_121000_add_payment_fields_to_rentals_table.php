@@ -1,0 +1,33 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::table('rentals', function (Blueprint $table) {
+            if (!Schema::hasColumn('rentals', 'payment_proof')) {
+                $table->string('payment_proof')->nullable()->after('notes');
+            }
+            if (!Schema::hasColumn('rentals', 'payment_date')) {
+                $table->dateTime('payment_date')->nullable()->after('payment_proof');
+            }
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('rentals', function (Blueprint $table) {
+            if (Schema::hasColumn('rentals', 'payment_date')) {
+                $table->dropColumn('payment_date');
+            }
+            if (Schema::hasColumn('rentals', 'payment_proof')) {
+                $table->dropColumn('payment_proof');
+            }
+        });
+    }
+};
+
