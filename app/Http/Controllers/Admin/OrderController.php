@@ -23,10 +23,16 @@ class OrderController extends Controller
         return view('admin.orders.show', compact('order'));
     }
 
-    public function confirmPayment(Order $order)
+    public function confirmPayment(Request $request, Order $order)
     {
         if ($order->status !== 'pending') {
             return back()->with('error', 'Order status is not pending.');
+        }
+        if (!$order->payment_proof) {
+            return back()->with('error', 'Payment proof is required before approval.');
+        }
+        if (in_array($order->payment_proof_risk, ['review', 'flagged'], true) && !$request->boolean('review_acknowledged')) {
+            return back()->with('error', 'This proof is flagged by screening. Review it manually, then tick the review confirmation.');
         }
         $order->update([
             'status' => 'paid',

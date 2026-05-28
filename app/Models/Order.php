@@ -17,6 +17,12 @@ class Order extends Model
         'status',
         'fulfillment_status',
         'payment_proof',
+        'payment_proof_original_name',
+        'payment_proof_provider',
+        'payment_proof_confidence',
+        'payment_proof_risk',
+        'payment_proof_flags',
+        'payment_proof_analyzed_at',
         'payment_date',
         'pickup_method',
         'delivery_address',
@@ -30,6 +36,8 @@ class Order extends Model
     protected $casts = [
         'payment_date' => 'datetime',
         'delivered_at' => 'datetime',
+        'payment_proof_flags' => 'array',
+        'payment_proof_analyzed_at' => 'datetime',
     ];
 
     public function user()

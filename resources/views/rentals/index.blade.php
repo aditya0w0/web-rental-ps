@@ -3,43 +3,56 @@
 @section('title', 'My Rentals')
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
-    <div class="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-8">
-        <aside class="hidden lg:block bg-white/10 rounded-lg p-4 border border-white/10 h-fit">
-            <x-user-sidebar />
-        </aside>
-        <div>
-            <h1 class="text-3xl font-bold mb-6">My Rentals</h1>
+<div class="bg-slate-50">
+    <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <div class="mb-8">
+            <p class="section-eyebrow">Customer</p>
+            <h1 class="section-title">My Rentals</h1>
+            <p class="section-copy">Pantau rental PlayStation, pembayaran, dan proses pengambilan dari satu tempat.</p>
+        </div>
 
-    <div class="card overflow-hidden">
-        <table class="min-w-full leading-normal">
-            <thead>
-                <tr>
-                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-green-50 text-left text-xs font-semibold text-emerald-700 uppercase tracking-wider">Type</th>
-                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Period</th>
-                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Fulfillment</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($rentals as $r)
-                    <tr>
-                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm"><a href="{{ route('user.rentals.show', $r) }}" class="text-indigo-600 hover:underline">{{ $r->type?->name }}</a></td>
-                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{{ $r->start_time?->format('d M Y H:i') }} → {{ $r->end_time?->format('d M Y H:i') }}</td>
-                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{{ ucfirst($r->status) }}</td>
-                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{{ ucfirst($r->fulfillment_status ?? 'none') }}</td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="4" class="px-5 py-8 text-center text-gray-500">Belum ada rental.</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+        <div class="grid gap-6 lg:grid-cols-[260px_1fr]">
+            <aside class="h-fit rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
+                <x-user-sidebar />
+            </aside>
 
-    <div class="mt-6">
-        {{ $rentals->links() }}
+            <section class="table-shell">
+                <header class="flex items-center justify-between gap-3">
+                    <h2 class="text-lg font-semibold text-slate-950">Rental terbaru</h2>
+                    <a href="{{ route('products.playstation') }}" class="btn btn-secondary py-2 text-sm">Sewa lagi</a>
+                </header>
+                <div class="overflow-x-auto">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Tipe</th>
+                                <th>Periode</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Fulfillment</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($rentals as $rental)
+                                @php
+                                    $status = strtolower($rental->status ?? 'pending');
+                                    $badge = in_array($status, ['completed', 'confirmed', 'active']) ? 'badge-success' : ($status === 'pending' ? 'badge-warning' : 'badge-danger');
+                                @endphp
+                                <tr>
+                                    <td><a href="{{ route('user.rentals.show', $rental) }}" class="link-action">{{ $rental->type?->name }}</a></td>
+                                    <td>{{ $rental->start_time?->format('d M Y H:i') }} - {{ $rental->end_time?->format('d M Y H:i') }}</td>
+                                    <td>Rp {{ number_format($rental->total_price, 0, ',', '.') }}</td>
+                                    <td><span class="badge {{ $badge }}">{{ ucfirst($rental->status ?? 'pending') }}</span></td>
+                                    <td>{{ ucfirst($rental->fulfillment_status ?? 'none') }}</td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="5" class="text-center text-slate-500">Belum ada rental.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+                <div class="border-t border-slate-200 px-5 py-4">{{ $rentals->links() }}</div>
+            </section>
         </div>
     </div>
 </div>

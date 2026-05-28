@@ -20,7 +20,7 @@ class CartController extends Controller
     {
         $cart = Auth::user()->cart()->with('items.accessory')->firstOrCreate(['user_id' => Auth::id()]);
         if ($cart->items->isEmpty()) {
-            return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
+            return redirect()->route('cart.index')->with('error', 'Cart kosong. Kalau baru checkout, cek order terbaru kamu di My Orders.');
         }
         $cities = config('service.allowed_cities');
         $rates = config('service.shipping_rates');
@@ -98,10 +98,10 @@ class CartController extends Controller
 
     public function checkout(Request $request)
     {
-        $cart = Auth::user()->cart;
+        $cart = Auth::user()->cart()->with('items.accessory')->first();
 
-        if ($cart->items->isEmpty()) {
-            return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
+        if (!$cart || $cart->items->isEmpty()) {
+            return redirect()->route('cart.index')->with('error', 'Cart kosong. Kalau baru checkout, cek order terbaru kamu di My Orders.');
         }
 
         $data = $request->validate([
@@ -155,7 +155,7 @@ class CartController extends Controller
 
         $cart->items()->delete();
 
-        return redirect()->route('orders.payment', $order)->with('success', 'Checkout successful. Please proceed with payment.');
+        return redirect()->route('orders.payment', $order)->with('success', 'Order sudah dibuat dari cart. Upload bukti pembayaran, lalu kamu akan kembali ke detail order.');
     }
 
     public function empty()

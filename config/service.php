@@ -9,4 +9,9 @@ return [
     ],
     'delivery_per_km' => 2000,
     'late_fee_per_hour' => 20000,
+    'complaint_sla' => [
+        'response_hours' => 4,
+        'resolution_hours' => 48,
+        'warning_hours' => 2,
+    ],
 ];

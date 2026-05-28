@@ -76,6 +76,13 @@ class PlaystationTypeController extends Controller
 
     public function destroy(PlaystationType $playstationType)
     {
+        if ($playstationType->rentals()->exists() || $playstationType->units()->exists()) {
+            $playstationType->update(['is_active' => false]);
+
+            return redirect()->route('admin.playstation-types.index')
+                             ->with('success', 'PlayStation type has history or units, so it was deactivated instead of deleted.');
+        }
+
         if ($playstationType->image) {
             Storage::disk('public')->delete($playstationType->image);
         }

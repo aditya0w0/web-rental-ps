@@ -1,1 +1,61 @@
-<!DOCTYPE html>\n<html>\n<head>\n    <title>Sales and Rental Report</title>\n    <style>\n        body { font-family: sans-serif; }\n        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }\n        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }\n        th { background-color: #f2f2f2; }\n        h1, h2 { text-align: center; }\n        .date-range { text-align: center; margin-bottom: 20px; }\n    </style>\n</head>\n<body>\n    <h1>Sales and Rental Report</h1>\n    @if($startDate && $endDate)\n        <div class=\"date-range\">\n            <strong>From:</strong> {{ \Carbon\Carbon::parse($startDate)->format(\'d M Y\') }} \n            <strong>To:</strong> {{ \Carbon\Carbon::parse($endDate)->format(\'d M Y\') }}\n        </div>\n    @endif\n\n    <h2>Sales Report</h2>\n    <table>\n        <thead>\n            <tr>\n                <th>Order ID</th>\n                <th>Date</th>\n                <th>Customer</th>\n                <th>Total</th>\n            </tr>\n        </thead>\n        <tbody>\n            @forelse($sales as $sale)\n                <tr>\n                    <td>{{ $sale->order_number }}</td>\n                    <td>{{ $sale->created_at->format(\'d M Y\') }}</td>\n                    <td>{{ $sale->user->name }}</td>\n                    <td>Rp {{ number_format($sale->total_price, 0, \',\', \'.\') }}</td>\n                </tr>\n            @empty\n                <tr>\n                    <td colspan=\"4\" style=\"text-align: center;\">No sales data available.</td>\n                </tr>\n            @endforelse\n        </tbody>\n    </table>\n\n    <h2>Rental Report</h2>\n    <table>\n        <thead>\n            <tr>\n                <th>Rental ID</th>\n                <th>Start Date</th>\n                <th>End Date</th>\n                <th>Customer</th>\n                <th>Total</th>\n            </tr>\n        </thead>\n        <tbody>\n            @forelse($rentals as $rental)\n                <tr>\n                    <td>{{ $rental->id }}</td>\n                    <td>{{ $rental->start_date->format(\'d M Y\') }}</td>\n                    <td>{{ $rental->end_date->format(\'d M Y\') }}</td>\n                    <td>{{ $rental->user->name }}</td>\n                    <td>Rp {{ number_format($rental->total_price, 0, \',\', \'.\') }}</td>\n                </tr>\n            @empty\n                <tr>\n                    <td colspan=\"5\" style=\"text-align: center;\">No rental data available.</td>\n                </tr>\n            @endforelse\n        </tbody>\n    </table>\n</body>\n</html>\n
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Sales and Rental Report</title>
+    <style>
+        body { font-family: sans-serif; color: #0f172a; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+        th, td { border: 1px solid #dbe3ef; padding: 8px; text-align: left; }
+        th { background-color: #f1f5f9; font-size: 12px; text-transform: uppercase; }
+        h1, h2 { margin-bottom: 12px; }
+        .date-range { margin-bottom: 20px; color: #475569; }
+    </style>
+</head>
+<body>
+    <h1>Sales and Rental Report</h1>
+    @if($startDate || $endDate)
+        <div class="date-range">
+            Period:
+            {{ $startDate ? \Carbon\Carbon::parse($startDate)->format('d M Y') : 'All time' }}
+            -
+            {{ $endDate ? \Carbon\Carbon::parse($endDate)->format('d M Y') : 'Today' }}
+        </div>
+    @endif
+
+    <h2>Accessory Sales</h2>
+    <table>
+        <thead><tr><th>Order ID</th><th>Date</th><th>Customer</th><th>Total</th></tr></thead>
+        <tbody>
+            @forelse($sales as $sale)
+                <tr>
+                    <td>{{ $sale->order_number }}</td>
+                    <td>{{ $sale->created_at?->format('d M Y') }}</td>
+                    <td>{{ $sale->user?->name ?? '-' }}</td>
+                    <td>Rp {{ number_format($sale->total_price, 0, ',', '.') }}</td>
+                </tr>
+            @empty
+                <tr><td colspan="4" style="text-align:center;">No sales data available.</td></tr>
+            @endforelse
+        </tbody>
+    </table>
+
+    <h2>Console Rentals</h2>
+    <table>
+        <thead><tr><th>Rental ID</th><th>Start Date</th><th>End Date</th><th>Customer</th><th>Total</th></tr></thead>
+        <tbody>
+            @forelse($rentals as $rental)
+                <tr>
+                    <td>{{ $rental->id }}</td>
+                    <td>{{ $rental->start_time?->format('d M Y') }}</td>
+                    <td>{{ $rental->end_time?->format('d M Y') }}</td>
+                    <td>{{ $rental->user?->name ?? '-' }}</td>
+                    <td>Rp {{ number_format($rental->total_price, 0, ',', '.') }}</td>
+                </tr>
+            @empty
+                <tr><td colspan="5" style="text-align:center;">No rental data available.</td></tr>
+            @endforelse
+        </tbody>
+    </table>
+</body>
+</html>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\OrderIssue;
+use App\Services\PaymentProofAnalyzer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -27,10 +28,12 @@ class OrderController extends Controller
         if ($order->payment_proof) {
             return redirect()->route('orders.show', $order)->with('success', 'Payment proof already uploaded. Waiting for admin confirmation.');
         }
+        $order->load('items.accessory');
+
         return view('orders.payment', compact('order'));
     }
 
-    public function processPayment(Request $request, Order $order)
+    public function processPayment(Request $request, Order $order, PaymentProofAnalyzer $analyzer)
     {
         $this->authorize('update', $order);
 
@@ -42,12 +45,15 @@ class OrderController extends Controller
             return redirect()->route('orders.show', $order)->with('error', 'This order cannot be paid for.');
         }
 
-        $path = $request->file('payment_proof')->store('payment_proofs', 'public');
+        $file = $request->file('payment_proof');
+        $analysis = $analyzer->analyze($file);
+        $path = $file->store('payment_proofs', 'public');
 
         $order->update([
             'payment_proof' => $path,
             'status' => 'pending',
             'payment_date' => null,
+            ...$analysis,
         ]);
 
         return redirect()->route('orders.show', $order)->with('success', 'Payment submitted successfully. Waiting for admin confirmation.');
@@ -69,6 +75,8 @@ class OrderController extends Controller
             }
         }
         $order->load(['issues']);
+        $order->issues->each->syncSlaStatus();
+
         return view('orders.show', compact('order'));
     }
 }

@@ -49,7 +49,7 @@
             </div>
             @if($order->status === 'pending')
                 <div>
-                    <a href="{{ route('orders.payment', $order) }}" class="bg-green-500 text-white px-6 py-3 rounded-md font-semibold hover:bg-green-600 transition-colors duration-300">Proceed to Payment</a>
+                    <a href="{{ route('orders.payment', $order) }}" class="btn btn-primary">Lanjut pembayaran</a>
                 </div>
             @elseif($order->payment_proof)
                 <div>
@@ -64,39 +64,45 @@
             $deadline = $order->delivered_at?->copy()->addHours(24);
             $canComplain = (($order->fulfillment_status ?? 'none') === 'completed') && $order->delivered_at && now()->lte($deadline);
             $remain = ($deadline) ? \Carbon\Carbon::now()->diffForHumans($deadline, ['syntax' => \Carbon\CarbonInterface::DIFF_ABSOLUTE]) : null;
+            $complaintReason = null;
+            if (!$canComplain) {
+                $complaintReason = (($order->fulfillment_status ?? 'none') === 'completed' && $order->delivered_at)
+                    ? 'Batas pengajuan 24 jam setelah barang diterima sudah lewat.'
+                    : 'Keluhan aktif setelah order completed dan barang diterima.';
+            }
         @endphp
         <div class="mt-6">
-            @if($canComplain)
-            <div class="relative overflow-hidden rounded-xl border border-rose-300 shadow-lg" style="background:linear-gradient(90deg,#ffe3ea 0%, #ffd1dc 100%)">
+            <div class="rounded-lg border {{ $canComplain ? 'border-rose-200 bg-rose-50' : 'border-slate-200 bg-slate-50' }}">
                 <div class="p-4 md:p-5 flex items-center justify-between gap-4">
                     <div class="flex items-start gap-3">
-                        <span class="inline-flex h-9 w-9 items-center justify-center rounded-full" style="background:linear-gradient(135deg,#ffe3ea,#ffd1dc)">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#ff5f85" stroke-width="2"/><path d="M12 7v6" stroke="#ff5f85" stroke-width="2"/><circle cx="12" cy="17" r="1" fill="#ff5f85"/></svg>
+                        <span class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-white {{ $canComplain ? 'text-rose-700' : 'text-slate-600' }}">
+                            <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
                         </span>
                         <div>
-                            <div class="text-rose-900 font-semibold">Barang bermasalah? Ajukan keluhan sekarang</div>
+                            <div class="{{ $canComplain ? 'text-rose-900' : 'text-slate-950' }} font-semibold">Complaint & SLA</div>
                             @if($deadline)
-                            <div class="text-xs text-rose-800">Batas waktu: {{ $deadline->format('d M Y H:i') }} @if($remain) (sisa {{ $remain }}) @endif</div>
+                                <div class="text-xs {{ $canComplain ? 'text-rose-800' : 'text-slate-600' }}">Window komplain: {{ $deadline->format('d M Y H:i') }} @if($remain && $canComplain) (sisa {{ $remain }}) @endif</div>
+                            @endif
+                            @if($complaintReason)
+                                <div class="mt-1 text-sm text-slate-600">{{ $complaintReason }}</div>
+                            @else
+                                <div class="mt-1 text-sm text-rose-800">Admin wajib respon dalam {{ config('service.complaint_sla.response_hours', 4) }} jam dan target selesai {{ config('service.complaint_sla.resolution_hours', 48) }} jam.</div>
                             @endif
                         </div>
                     </div>
-                    <a href="{{ route('orders.issue.create', $order) }}" class="px-5 py-3 rounded-lg font-semibold text-white shadow-md hover:opacity-95" style="background:linear-gradient(90deg,#ff5f85 0%, #d946ef 100%)">Laporkan Keluhan</a>
+                    @if($canComplain)
+                        <a href="{{ route('orders.issue.create', $order) }}" class="btn btn-secondary">Laporkan keluhan</a>
+                    @else
+                        <span class="inline-flex cursor-not-allowed items-center rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-400">Belum bisa komplain</span>
+                    @endif
                 </div>
             </div>
-            @else
-            <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700">
-                Keluhan dapat diajukan maksimal 24 jam setelah status <span class="font-semibold">Completed</span>.
-                @if($deadline)
-                    <span class="ml-1 text-gray-600">Deadline: {{ $deadline->format('d M Y H:i') }}</span>
-                @endif
-            </div>
-            @endif
         </div>
     </div>
 
     <div class="bg-white shadow-md rounded-lg p-6 mb-6">
         <h2 class="text-lg font-semibold text-gray-800 mb-4">Fulfillment Timeline</h2>
-        <div class="border-l-2 border-purple-600 pl-4">
+        <div class="border-l-2 border-sky-600 pl-4">
             <div class="mb-3">
                 <div class="font-semibold">Order Placed</div>
                 <div class="text-sm text-gray-500">{{ \Carbon\Carbon::parse($order->created_at)->format('d M Y, H:i') }}</div>
@@ -121,7 +127,7 @@
                 @php $fs = $order->fulfillment_status ?? 'none'; @endphp
                 <div class="font-semibold">Fulfillment: 
                     <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold 
-                        {{ $fs==='completed' ? 'bg-emerald-100 text-emerald-700' : ($fs==='processing' ? 'bg-indigo-100 text-indigo-700' : ($fs==='ready_for_pickup' ? 'bg-blue-100 text-blue-700' : ($fs==='shipped' ? 'bg-sky-100 text-sky-700' : 'bg-gray-100 text-gray-700'))) }}">
+                        {{ $fs==='completed' ? 'bg-emerald-100 text-emerald-700' : ($fs==='processing' ? 'bg-slate-100 text-slate-700' : ($fs==='ready_for_pickup' ? 'bg-blue-100 text-blue-700' : ($fs==='shipped' ? 'bg-sky-100 text-sky-700' : 'bg-gray-100 text-gray-700'))) }}">
                         {{ ucfirst($fs) }}
                     </span>
                 </div>
@@ -169,6 +175,7 @@
                     <tr class="text-left text-gray-600">
                         <th class="py-2">Tipe</th>
                         <th class="py-2">Status</th>
+                        <th class="py-2">SLA</th>
                         <th class="py-2">Respon Admin</th>
                         <th class="py-2">Dibuat</th>
                     </tr>
@@ -178,6 +185,11 @@
                         <tr class="border-t">
                             <td class="py-2">{{ ucfirst($i->type) }}</td>
                             <td class="py-2">{{ ucfirst($i->status) }}</td>
+                            <td class="py-2">
+                                <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold {{ $i->sla_status === 'breached' ? 'bg-rose-100 text-rose-700' : ($i->sla_status === 'at_risk' ? 'bg-amber-100 text-amber-800' : ($i->sla_status === 'met' ? 'bg-emerald-100 text-emerald-700' : 'bg-sky-100 text-sky-700')) }}">
+                                    {{ str_replace('_', ' ', ucfirst($i->sla_status ?? 'on_track')) }}
+                                </span>
+                            </td>
                             <td class="py-2">{{ $i->admin_response ? Str::limit($i->admin_response, 80) : '-' }}</td>
                             <td class="py-2">{{ $i->created_at?->format('d M Y H:i') }}</td>
                         </tr>

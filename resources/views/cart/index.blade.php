@@ -19,8 +19,12 @@
 
     @if($cart->items->isEmpty())
         <div class="text-center py-12">
-            <p class="text-xl text-gray-500">Your cart is empty.</p>
-            <a href="{{ route('products.accessories') }}" class="mt-4 inline-block btn btn-primary">Shop for Accessories</a>
+            <p class="text-xl font-semibold text-slate-700">Cart kosong.</p>
+            <p class="mx-auto mt-2 max-w-md text-sm text-slate-500">Kalau kamu baru checkout, item aksesoris sudah pindah menjadi order dan bisa dicek di My Orders.</p>
+            <div class="mt-5 flex flex-wrap justify-center gap-3">
+                <a href="{{ route('orders.index') }}" class="btn btn-secondary">My Orders</a>
+                <a href="{{ route('products.accessories') }}" class="btn btn-primary">Cari aksesoris</a>
+            </div>
         </div>
     @else
         <div class="bg-white shadow-md rounded-lg overflow-hidden">
@@ -53,7 +57,7 @@
                                     @csrf
                                     @method('PATCH')
                                     <input type="number" name="quantity" value="{{ $item->quantity }}" min="1" class="w-16 text-center border-gray-300 rounded-md">
-                                    <button type="submit" class="ml-2 text-indigo-600 hover:text-indigo-900"><i class="fas fa-sync-alt"></i></button>
+                                    <button type="submit" class="ml-2 text-sky-700 hover:text-sky-900"><i class="fas fa-sync-alt"></i></button>
                                 </form>
                             </td>
                             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">Rp {{ number_format($item->accessory->price * $item->quantity, 0, ',', '.') }}</td>
@@ -87,7 +91,7 @@
                             @csrf
                             <button type="submit" class="w-full bg-gray-200 text-gray-800 py-3 px-4 rounded-md font-semibold hover:bg-gray-300">Empty Cart</button>
                         </form>
-                        <a href="{{ route('cart.checkout.form') }}" class="flex-1 block text-center bg-purple-600 text-white py-3 px-4 rounded-md font-semibold hover:bg-purple-700">Proceed to Checkout</a>
+                        <a href="{{ route('cart.checkout.form') }}" class="btn btn-primary flex-1">Proceed to Checkout</a>
                     </div>
                 </div>
             </div>

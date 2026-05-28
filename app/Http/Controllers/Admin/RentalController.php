@@ -89,10 +89,16 @@ class RentalController extends Controller
         return view('admin.rentals.show', compact('rental'));
     }
 
-    public function confirmPayment(Rental $rental)
+    public function confirmPayment(Request $request, Rental $rental)
     {
         if ($rental->status !== 'pending' && $rental->status !== 'confirmed') {
             return back()->with('error', 'Rental status cannot be confirmed.');
+        }
+        if (!$rental->payment_proof) {
+            return back()->with('error', 'Payment proof is required before approval.');
+        }
+        if (in_array($rental->payment_proof_risk, ['review', 'flagged'], true) && !$request->boolean('review_acknowledged')) {
+            return back()->with('error', 'This proof is flagged by screening. Review it manually, then tick the review confirmation.');
         }
         $rental->update([
             'status' => 'confirmed',

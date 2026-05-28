@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Accessory;
 use App\Models\PlaystationType;
 use App\Models\PlaystationUnit;
 use App\Models\Rental;
+use App\Services\PaymentProofAnalyzer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon as Carbon;
 
 class UserRentalController extends Controller
@@ -47,7 +50,7 @@ class UserRentalController extends Controller
                 $rental->user->notify(new \App\Notifications\RentalStatusChanged($rental));
             }
         }
-        $rental->load(['type','unit']);
+        $rental->load(['type','unit','accessories.accessory']);
         return view('rentals.show', compact('rental'));
     }
     public function create(PlaystationType $type)
@@ -55,8 +58,12 @@ class UserRentalController extends Controller
         $availableUnits = PlaystationUnit::where('playstation_type_id', $type->id)
             ->where('status', 'available')
             ->count();
+        $accessories = Accessory::where('is_active', true)
+            ->where('stock', '>', 0)
+            ->orderBy('name')
+            ->get();
 
-        return view('rentals.create', compact('type', 'availableUnits'));
+        return view('rentals.create', compact('type', 'availableUnits', 'accessories'));
     }
 
     public function store(Request $request, PlaystationType $type)
@@ -72,64 +79,106 @@ class UserRentalController extends Controller
             'phone_number' => 'required|string',
             'notes' => 'nullable|string',
             'agree_terms' => 'accepted',
+            'accessories' => 'nullable|array',
+            'accessories.*' => 'nullable|integer|min:0',
         ]);
 
-        $unit = PlaystationUnit::where('playstation_type_id', $type->id)
-            ->where('status', 'available')
-            ->first();
+        $requestedAccessories = collect($data['accessories'] ?? [])
+            ->map(fn ($quantity) => (int) $quantity)
+            ->filter(fn ($quantity) => $quantity > 0);
 
-        if (!$unit) {
-            return back()->withInput()->with('error', 'Tidak ada unit tersedia untuk tipe ini.');
-        }
+        return DB::transaction(function () use ($data, $type, $requestedAccessories) {
+            $unit = PlaystationUnit::where('playstation_type_id', $type->id)
+                ->where('status', 'available')
+                ->lockForUpdate()
+                ->first();
 
-        $start = Carbon::parse($data['start_time']);
-        $end = (clone $start);
-        $amount = (int) $data['duration_value'];
-        if ($data['duration_type'] === 'hour') {
-            $end->addHours($amount);
-            $price = (float) $type->rental_price_per_hour * $amount;
-        } else {
-            $end->addDays($amount);
-            $price = (float) $type->rental_price_per_day * $amount;
-        }
-
-        $deliveryFee = 0;
-        if ($data['pickup_method'] === 'delivery') {
-            $allowed = collect(config('service.allowed_cities'));
-            $cityKey = strtolower($data['delivery_city']);
-            if (!$allowed->contains($cityKey)) {
-                return back()->withInput()->with('error', 'Pengiriman hanya tersedia untuk Pemalang, Batang, dan Pekalongan.');
+            if (!$unit) {
+                return back()->withInput()->with('error', 'Tidak ada unit tersedia untuk tipe ini.');
             }
-            $cityMap = [
-                'batang' => 15000,
-                'pemalang' => 20000,
-                'pekalongan' => 10000,
-            ];
-            $deliveryFee = (float) ($cityMap[$cityKey] ?? 0);
-        }
 
-        $rental = Rental::create([
-            'user_id' => Auth::id(),
-            'playstation_unit_id' => $unit->id,
-            'playstation_type_id' => $type->id,
-            'start_time' => $start,
-            'end_time' => $end,
-            'duration_type' => $data['duration_type'],
-            'duration_value' => $data['duration_value'],
-            'total_price' => $price + $deliveryFee,
-            'status' => 'pending',
-            'pickup_method' => $data['pickup_method'],
-            'delivery_address' => $data['pickup_method'] === 'delivery' ? ($data['delivery_address'] ?? null) : null,
-            'delivery_city' => $data['pickup_method'] === 'delivery' ? strtolower($data['delivery_city']) : null,
-            'delivery_distance_km' => $data['pickup_method'] === 'delivery' ? ($data['delivery_distance_km'] ?? 0) : null,
-            'delivery_fee' => $deliveryFee,
-            'phone_number' => $data['phone_number'],
-            'notes' => $data['notes'] ?? null,
-        ]);
+            $start = Carbon::parse($data['start_time']);
+            $end = (clone $start);
+            $amount = (int) $data['duration_value'];
+            if ($data['duration_type'] === 'hour') {
+                $end->addHours($amount);
+                $price = (float) $type->rental_price_per_hour * $amount;
+            } else {
+                $end->addDays($amount);
+                $price = (float) $type->rental_price_per_day * $amount;
+            }
 
-        $unit->update(['status' => 'rented']);
+            $deliveryFee = 0;
+            if ($data['pickup_method'] === 'delivery') {
+                $allowed = collect(config('service.allowed_cities'));
+                $cityKey = strtolower($data['delivery_city']);
+                if (!$allowed->contains($cityKey)) {
+                    return back()->withInput()->with('error', 'Pengiriman hanya tersedia untuk Pemalang, Batang, dan Pekalongan.');
+                }
+                $cityMap = [
+                    'batang' => 15000,
+                    'pemalang' => 20000,
+                    'pekalongan' => 10000,
+                ];
+                $deliveryFee = (float) ($cityMap[$cityKey] ?? 0);
+            }
 
-        return redirect()->route('rentals.payment', $rental)->with('success', 'Pengajuan sewa dibuat. Silakan lakukan pembayaran.');
+            $selectedAccessories = collect();
+            $accessoryTotal = 0;
+            if ($requestedAccessories->isNotEmpty()) {
+                $items = Accessory::whereIn('id', $requestedAccessories->keys())
+                    ->where('is_active', true)
+                    ->lockForUpdate()
+                    ->get()
+                    ->keyBy('id');
+
+                foreach ($requestedAccessories as $accessoryId => $quantity) {
+                    $accessory = $items->get((int) $accessoryId);
+                    if (!$accessory || $accessory->stock < $quantity) {
+                        return back()->withInput()->with('error', 'Stok aksesoris tidak cukup atau item tidak tersedia.');
+                    }
+
+                    $selectedAccessories->push([
+                        'accessory' => $accessory,
+                        'quantity' => $quantity,
+                        'price' => (float) $accessory->price,
+                    ]);
+                    $accessoryTotal += (float) $accessory->price * $quantity;
+                }
+            }
+
+            $rental = Rental::create([
+                'user_id' => Auth::id(),
+                'playstation_unit_id' => $unit->id,
+                'playstation_type_id' => $type->id,
+                'start_time' => $start,
+                'end_time' => $end,
+                'duration_type' => $data['duration_type'],
+                'duration_value' => $data['duration_value'],
+                'total_price' => $price + $deliveryFee + $accessoryTotal,
+                'status' => 'pending',
+                'pickup_method' => $data['pickup_method'],
+                'delivery_address' => $data['pickup_method'] === 'delivery' ? ($data['delivery_address'] ?? null) : null,
+                'delivery_city' => $data['pickup_method'] === 'delivery' ? strtolower($data['delivery_city']) : null,
+                'delivery_distance_km' => $data['pickup_method'] === 'delivery' ? ($data['delivery_distance_km'] ?? 0) : null,
+                'delivery_fee' => $deliveryFee,
+                'phone_number' => $data['phone_number'],
+                'notes' => $data['notes'] ?? null,
+            ]);
+
+            foreach ($selectedAccessories as $item) {
+                $rental->accessories()->create([
+                    'accessory_id' => $item['accessory']->id,
+                    'quantity' => $item['quantity'],
+                    'price' => $item['price'],
+                ]);
+                $item['accessory']->decrement('stock', $item['quantity']);
+            }
+
+            $unit->update(['status' => 'rented']);
+
+            return redirect()->route('rentals.payment', $rental)->with('success', 'Pengajuan sewa dibuat. Silakan lakukan pembayaran.');
+        });
     }
 
     public function payment(Rental $rental)
@@ -143,10 +192,11 @@ class UserRentalController extends Controller
         if ($rental->payment_proof) {
             return redirect()->route('user.rentals.show', $rental)->with('success', 'Bukti pembayaran sudah diupload. Menunggu konfirmasi admin.');
         }
+        $rental->load(['type', 'accessories.accessory']);
         return view('rentals.payment', compact('rental'));
     }
 
-    public function processPayment(Request $request, Rental $rental)
+    public function processPayment(Request $request, Rental $rental, PaymentProofAnalyzer $analyzer)
     {
         if ($rental->user_id !== Auth::id()) {
             abort(403);
@@ -155,10 +205,13 @@ class UserRentalController extends Controller
             'payment_proof' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $path = $request->file('payment_proof')->store('rental_payment_proofs', 'public');
+        $file = $request->file('payment_proof');
+        $analysis = $analyzer->analyze($file);
+        $path = $file->store('rental_payment_proofs', 'public');
 
         $rental->update([
             'payment_proof' => $path,
+            ...$analysis,
         ]);
 
         return redirect()->route('user.rentals.show', $rental)->with('success', 'Bukti pembayaran terkirim. Menunggu konfirmasi admin.');

@@ -1,90 +1,100 @@
 @extends('layouts.app')
 
-@section('title', 'Sales and Rental Reports')
+@section('title', 'Reports')
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold mb-6">Sales and Rental Reports</h1>
-
-    <div class="bg-white shadow-md rounded-lg p-6 mb-8">
-        <form action="{{ route('reports.index') }}" method="GET">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <label for="start_date" class="block text-sm font-medium text-gray-700">Start Date</label>
-                    <input type="date" name="start_date" id="start_date" value="{{ $startDate }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                </div>
-                <div>
-                    <label for="end_date" class="block text-sm font-medium text-gray-700">End Date</label>
-                    <input type="date" name="end_date" id="end_date" value="{{ $endDate }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                </div>
-                <div class="flex items-end">
-                    <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded-md font-semibold hover:bg-purple-700">Filter</button>
-                </div>
+<div class="bg-slate-50">
+    <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <div class="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+                <p class="section-eyebrow">Admin</p>
+                <h1 class="section-title">Reports</h1>
+                <p class="section-copy">Export paid accessory orders and completed console rentals.</p>
             </div>
-        </form>
-    </div>
+            <div class="flex flex-wrap gap-3">
+                <a href="{{ route('reports.export.pdf', request()->query()) }}" class="btn btn-secondary">
+                    <i class="fas fa-file-pdf mr-2" aria-hidden="true"></i>
+                    PDF
+                </a>
+                <a href="{{ route('reports.export.excel', request()->query()) }}" class="btn btn-primary">
+                    <i class="fas fa-file-excel mr-2" aria-hidden="true"></i>
+                    Excel
+                </a>
+            </div>
+        </div>
 
-    <div class="flex justify-end mb-4">
-        <a href="{{ route('reports.export.pdf', request()->query()) }}" class="bg-red-500 text-white px-4 py-2 rounded-md font-semibold hover:bg-red-600 mr-2">Export to PDF</a>
-        <a href="{{ route('reports.export.excel', request()->query()) }}" class="bg-green-500 text-white px-4 py-2 rounded-md font-semibold hover:bg-green-600">Export to Excel</a>
-    </div>
+        <section class="card mb-8 p-6">
+            <form action="{{ route('reports.index') }}" method="GET" class="grid gap-4 md:grid-cols-[1fr_1fr_auto] md:items-end">
+                <div>
+                    <x-input-label for="start_date" value="Start date" />
+                    <x-text-input id="start_date" type="date" name="start_date" value="{{ $startDate }}" class="mt-2 block w-full" />
+                </div>
+                <div>
+                    <x-input-label for="end_date" value="End date" />
+                    <x-text-input id="end_date" type="date" name="end_date" value="{{ $endDate }}" class="mt-2 block w-full" />
+                </div>
+                <div class="flex gap-3">
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                    <a href="{{ route('reports.index') }}" class="btn btn-secondary">Reset</a>
+                </div>
+            </form>
+        </section>
 
-    <div class="bg-white shadow-md rounded-lg overflow-hidden mb-8">
-        <h2 class="text-2xl font-bold p-6">Sales Report</h2>
-        <table class="min-w-full leading-normal">
-            <thead>
-                <tr>
-                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Order ID</th>
-                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
-                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Customer</th>
-                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Total</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($sales as $sale)
-                    <tr>
-                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{{ $sale->order_number }}</td>
-                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{{ $sale->created_at->format('d M Y') }}</td>
-                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{{ $sale->user->name }}</td>
-                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">Rp {{ number_format($sale->total_price, 0, ',', '.') }}</td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="4" class="text-center py-10">No sales data available for the selected period.</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+        <div class="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="stat-card"><span>Accessory orders</span><strong>{{ $sales->count() }}</strong></div>
+            <div class="stat-card"><span>Accessory revenue</span><strong>Rp {{ number_format($salesTotal ?? 0, 0, ',', '.') }}</strong></div>
+            <div class="stat-card"><span>Completed rentals</span><strong>{{ $rentals->count() }}</strong></div>
+            <div class="stat-card"><span>Rental revenue</span><strong>Rp {{ number_format($rentalsTotal ?? 0, 0, ',', '.') }}</strong></div>
+        </div>
 
-    <div class="bg-white shadow-md rounded-lg overflow-hidden">
-        <h2 class="text-2xl font-bold p-6">Rental Report</h2>
-        <table class="min-w-full leading-normal">
-            <thead>
-                <tr>
-                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Rental ID</th>
-                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Start Date</th>
-                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">End Date</th>
-                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Customer</th>
-                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Total</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($rentals as $rental)
-                    <tr>
-                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{{ $rental->id }}</td>
-                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{{ optional($rental->start_time)->format('d M Y') }}</td>
-                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{{ optional($rental->end_time)->format('d M Y') }}</td>
-                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{{ $rental->user->name }}</td>
-                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">Rp {{ number_format($rental->total_price, 0, ',', '.') }}</td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="5" class="text-center py-10">No rental data available for the selected period.</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+        <div class="grid gap-6 xl:grid-cols-2">
+            <section class="table-shell">
+                <header><h2 class="text-lg font-semibold text-slate-950">Accessory sales</h2></header>
+                <div class="overflow-x-auto">
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>Order</th><th>Date</th><th>Customer</th><th>Total</th></tr>
+                        </thead>
+                        <tbody>
+                            @forelse($sales as $sale)
+                                <tr>
+                                    <td><a href="{{ route('admin.orders.show', $sale) }}" class="link">{{ $sale->order_number }}</a></td>
+                                    <td>{{ $sale->created_at?->format('d M Y') }}</td>
+                                    <td>{{ $sale->user?->name ?? '-' }}</td>
+                                    <td>Rp {{ number_format($sale->total_price, 0, ',', '.') }}</td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="4" class="text-center text-slate-500">No sales data for this period.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="table-shell">
+                <header><h2 class="text-lg font-semibold text-slate-950">Console rentals</h2></header>
+                <div class="overflow-x-auto">
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>Rental</th><th>Start</th><th>End</th><th>Customer</th><th>Total</th></tr>
+                        </thead>
+                        <tbody>
+                            @forelse($rentals as $rental)
+                                <tr>
+                                    <td><a href="{{ route('admin.rentals.show', $rental) }}" class="link">#{{ $rental->id }}</a></td>
+                                    <td>{{ $rental->start_time?->format('d M Y') }}</td>
+                                    <td>{{ $rental->end_time?->format('d M Y') }}</td>
+                                    <td>{{ $rental->user?->name ?? '-' }}</td>
+                                    <td>Rp {{ number_format($rental->total_price, 0, ',', '.') }}</td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="5" class="text-center text-slate-500">No rental data for this period.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
     </div>
 </div>
 @endsection

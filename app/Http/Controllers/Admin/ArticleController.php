@@ -28,7 +28,7 @@ class ArticleController extends Controller
             'excerpt' => 'nullable|string|max:255',
             'body' => 'required|string',
             'author_name' => 'nullable|string|max:255',
-            'image' => 'nullable|image',
+            'image' => 'nullable|image|max:3072',
             'is_published' => 'sometimes|boolean',
             'published_at' => 'nullable|date_format:Y-m-d\\TH:i',
         ]);
@@ -42,11 +42,14 @@ class ArticleController extends Controller
         if (isset($data['image'])) {
             $data['image'] = $request->file('image')->store('articles', 'public');
         }
-        $data['is_published'] = $request->boolean('is_published', true);
-        if (!empty($data['published_at'])) {
+        $data['author_name'] = $data['author_name'] ?: ($request->user()->name ?? 'PlayHub');
+        $data['is_published'] = $request->boolean('is_published');
+        if ($data['is_published'] && !empty($data['published_at'])) {
             $data['published_at'] = Carbon::createFromFormat('Y-m-d\TH:i', $data['published_at']);
-        } else {
+        } elseif ($data['is_published']) {
             $data['published_at'] = now();
+        } else {
+            $data['published_at'] = null;
         }
 
         Article::create($data);
@@ -65,7 +68,7 @@ class ArticleController extends Controller
             'excerpt' => 'nullable|string|max:255',
             'body' => 'required|string',
             'author_name' => 'nullable|string|max:255',
-            'image' => 'nullable|image',
+            'image' => 'nullable|image|max:3072',
             'is_published' => 'sometimes|boolean',
             'published_at' => 'nullable|date_format:Y-m-d\\TH:i',
         ]);
@@ -82,9 +85,14 @@ class ArticleController extends Controller
         if (isset($data['image'])) {
             $data['image'] = $request->file('image')->store('articles', 'public');
         }
-        $data['is_published'] = $request->boolean('is_published', true);
-        if (!empty($data['published_at'])) {
+        $data['author_name'] = $data['author_name'] ?: ($request->user()->name ?? 'PlayHub');
+        $data['is_published'] = $request->boolean('is_published');
+        if ($data['is_published'] && !empty($data['published_at'])) {
             $data['published_at'] = Carbon::createFromFormat('Y-m-d\TH:i', $data['published_at']);
+        } elseif ($data['is_published']) {
+            $data['published_at'] = $article->published_at ?: now();
+        } else {
+            $data['published_at'] = null;
         }
 
         $article->update($data);

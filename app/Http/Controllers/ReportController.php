@@ -12,28 +12,9 @@ class ReportController extends Controller
 {
     public function index(Request $request)
     {
-        $startDate = $request->input('start_date');
-        $endDate = $request->input('end_date');
+        $data = $this->getReportData($request);
 
-        $sales = Order::where('status', 'completed')
-            ->when($startDate, function ($query) use ($startDate) {
-                return $query->whereDate('created_at', '>=', $startDate);
-            })
-            ->when($endDate, function ($query) use ($endDate) {
-                return $query->whereDate('created_at', '<=', $endDate);
-            })
-            ->get();
-
-        $rentals = Rental::where('status', 'completed')
-            ->when($startDate, function ($query) use ($startDate) {
-                return $query->whereDate('start_time', '>=', $startDate);
-            })
-            ->when($endDate, function ($query) use ($endDate) {
-                return $query->whereDate('start_time', '<=', $endDate);
-            })
-            ->get();
-
-        return view('reports.index', compact('sales', 'rentals', 'startDate', 'endDate'));
+        return view('reports.index', $data);
     }
 
     public function exportPdf(Request $request)
@@ -68,22 +49,29 @@ class ReportController extends Controller
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
 
-        $sales = Order::where('status', 'completed')
+        $sales = Order::with('user')
+            ->where(function ($query) {
+                $query->whereIn('status', ['paid', 'completed'])
+                    ->orWhere('fulfillment_status', 'completed');
+            })
             ->when($startDate, function ($query) use ($startDate) {
                 return $query->whereDate('created_at', '>=', $startDate);
             })
             ->when($endDate, function ($query) use ($endDate) {
                 return $query->whereDate('created_at', '<=', $endDate);
             })
+            ->latest()
             ->get();
 
-        $rentals = Rental::where('status', 'completed')
+        $rentals = Rental::with('user')
+            ->where('status', 'completed')
             ->when($startDate, function ($query) use ($startDate) {
                 return $query->whereDate('start_time', '>=', $startDate);
             })
             ->when($endDate, function ($query) use ($endDate) {
                 return $query->whereDate('start_time', '<=', $endDate);
             })
+            ->latest('start_time')
             ->get();
 
         return [
@@ -91,6 +79,8 @@ class ReportController extends Controller
             'rentals' => $rentals,
             'startDate' => $startDate,
             'endDate' => $endDate,
+            'salesTotal' => $sales->sum('total_price'),
+            'rentalsTotal' => $rentals->sum('total_price'),
         ];
     }
 

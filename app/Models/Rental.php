@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Rental extends Model
 {
@@ -29,6 +30,12 @@ class Rental extends Model
         'phone_number',
         'notes',
         'payment_proof',
+        'payment_proof_original_name',
+        'payment_proof_provider',
+        'payment_proof_confidence',
+        'payment_proof_risk',
+        'payment_proof_flags',
+        'payment_proof_analyzed_at',
         'payment_date'
     ];
 
@@ -37,6 +44,8 @@ class Rental extends Model
         'end_time' => 'datetime',
         'total_price' => 'decimal:2',
         'payment_date' => 'datetime',
+        'payment_proof_flags' => 'array',
+        'payment_proof_analyzed_at' => 'datetime',
     ];
 
     public function user(): BelongsTo
@@ -52,6 +61,11 @@ class Rental extends Model
     public function type(): BelongsTo
     {
         return $this->belongsTo(PlaystationType::class, 'playstation_type_id');
+    }
+
+    public function accessories(): HasMany
+    {
+        return $this->hasMany(RentalAccessory::class);
     }
 
     public function transaction()

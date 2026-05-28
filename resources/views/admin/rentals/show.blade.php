@@ -66,17 +66,47 @@
     <div class="bg-white shadow rounded-lg p-6">
         <h2 class="text-lg font-semibold mb-4">Payment</h2>
         @if($rental->payment_proof ?? false)
-            <a href="{{ asset('storage/' . $rental->payment_proof) }}" target="_blank">
-                <img src="{{ asset('storage/' . $rental->payment_proof) }}" alt="Payment Proof" class="w-32 h-32 object-cover rounded-md shadow">
-            </a>
+            <div class="grid gap-5 md:grid-cols-[160px_1fr]">
+                <a href="{{ asset('storage/' . $rental->payment_proof) }}" target="_blank" class="block overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
+                    <img src="{{ asset('storage/' . $rental->payment_proof) }}" alt="Payment Proof" class="h-40 w-full object-cover">
+                </a>
+                <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                    @php
+                        $proofRisk = $rental->payment_proof_risk ?? 'not_checked';
+                        $proofBadge = $proofRisk === 'low' ? 'badge-success' : (in_array($proofRisk, ['review', 'flagged'], true) ? ($proofRisk === 'flagged' ? 'badge-danger' : 'badge-warning') : 'bg-slate-100 text-slate-700');
+                    @endphp
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="badge {{ $proofBadge }}">{{ ucfirst(str_replace('_', ' ', $proofRisk)) }}</span>
+                        <span class="text-sm font-semibold text-slate-700">{{ $rental->payment_proof_provider ?? 'Provider not detected' }}</span>
+                        <span class="text-sm text-slate-500">{{ (int) ($rental->payment_proof_confidence ?? 0) }}% confidence</span>
+                    </div>
+                    <dl class="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+                        <div><dt class="font-semibold text-slate-500">File</dt><dd class="mt-1 text-slate-950">{{ $rental->payment_proof_original_name ?? basename($rental->payment_proof) }}</dd></div>
+                        <div><dt class="font-semibold text-slate-500">Analyzed</dt><dd class="mt-1 text-slate-950">{{ $rental->payment_proof_analyzed_at?->format('d M Y H:i') ?? '-' }}</dd></div>
+                    </dl>
+                    @if(!empty($rental->payment_proof_flags))
+                        <div class="mt-4 flex flex-wrap gap-2">
+                            @foreach($rental->payment_proof_flags as $flag)
+                                <span class="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-slate-700">{{ str_replace('_', ' ', $flag) }}</span>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+            </div>
         @else
             <div class="text-sm text-gray-600">No payment proof uploaded.</div>
         @endif
 
         <div class="flex gap-3 mt-4 items-center">
-            <form method="POST" action="{{ route('admin.rentals.confirm', $rental) }}" class="flex items-center">
+            <form method="POST" action="{{ route('admin.rentals.confirm', $rental) }}" class="flex flex-col gap-3">
                 @csrf
                 @method('PATCH')
+                @if(in_array($rental->payment_proof_risk, ['review', 'flagged'], true))
+                    <label class="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-900">
+                        <input type="checkbox" name="review_acknowledged" value="1" class="mt-1 rounded border-amber-300 text-slate-950 focus:ring-sky-500">
+                        <span>Saya sudah review manual bukti yang ditandai sistem.</span>
+                    </label>
+                @endif
                 <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded">Confirm Payment</button>
             </form>
             <form method="POST" action="{{ route('admin.rentals.reject', $rental) }}" class="flex items-center gap-2">
@@ -146,4 +176,3 @@
     </div>
 </div>
 @endsection
-
