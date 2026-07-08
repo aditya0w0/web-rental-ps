@@ -35,7 +35,7 @@
                     <tr class="border-b border-gray-200 hover:bg-gray-50">
                         <td class="py-3 px-6 text-left">
                             @if($accessory->image)
-                                <img src="{{ asset('storage/' . $accessory->image) }}" alt="{{ $accessory->name }}" class="h-12 w-12 object-cover rounded-md">
+                            <img src="{{ $accessory->image_url }}" alt="{{ $accessory->name }}" class="h-12 w-12 object-cover rounded-md">
                             @else
                                 <div class="h-12 w-12 bg-gray-200 rounded-md flex items-center justify-center">
                                     <i class="fas fa-image text-gray-400"></i>

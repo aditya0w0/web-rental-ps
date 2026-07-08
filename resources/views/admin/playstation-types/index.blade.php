@@ -34,7 +34,7 @@
                     <tr>
                         <td class="px-6 py-4 whitespace-nowrap">
                             @if($type->image)
-                                <img src="{{ asset('storage/' . $type->image) }}" alt="{{ $type->name }}" class="h-12 w-12 object-cover rounded-md">
+                            <img src="{{ $type->image_url }}" alt="{{ $type->name }}" class="h-12 w-12 object-cover rounded-md">
                             @else
                                 <div class="h-12 w-12 bg-gray-200 rounded-md flex items-center justify-center">
                                     <i class="fas fa-gamepad text-gray-400"></i>

@@ -18,3 +18,7 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+/.superpowers/
+cpanel_import.sql
+cpanel_run_migrations.php
+/tools/export_sqlite_to_mysql.php

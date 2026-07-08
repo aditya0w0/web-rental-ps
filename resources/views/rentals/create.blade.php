@@ -121,7 +121,7 @@
                                     <div class="flex gap-4">
                                         <div class="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-slate-100">
                                             @if($accessory->image)
-                                                <img src="{{ asset('storage/' . $accessory->image) }}" alt="{{ $accessory->name }}" class="h-full w-full object-cover">
+                                    <img src="{{ $accessory->image_url }}" alt="{{ $accessory->name }}" class="h-full w-full object-cover">
                                             @else
                                                 <i class="fas fa-headphones text-slate-400" aria-hidden="true"></i>
                                             @endif

@@ -141,7 +141,7 @@
         <div class="bg-white shadow-md rounded-lg p-4">
             <div class="flex items-start gap-6">
                 <div class="w-40 h-40 flex-shrink-0">
-                    <img class="w-full h-full object-cover rounded-lg" src="{{ $item->accessory->image ? asset('storage/' . $item->accessory->image) : 'https://via.placeholder.com/300x300' }}" alt="{{ $item->accessory->name }}"/>
+                        <img class="w-full h-full object-cover rounded-lg" src="{{ $item->accessory->image_url }}" alt="{{ $item->accessory->name }}"/>
                 </div>
                 <div class="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>

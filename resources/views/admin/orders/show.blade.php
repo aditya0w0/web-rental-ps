@@ -66,7 +66,7 @@
                     <tr class="border-b">
                         <td class="px-5 py-4">
                             <div class="w-20 h-20">
-                                <img class="w-full h-full object-cover rounded-md" src="{{ $item->accessory?->image ? asset('storage/' . $item->accessory->image) : 'https://via.placeholder.com/150' }}" alt="{{ $item->accessory?->name }}"/>
+                        <img class="w-full h-full object-cover rounded-md" src="{{ $item->accessory?->image_url ?? asset('images/products/dualsense-wireless-controller-ps5.png') }}" alt="{{ $item->accessory?->name }}"/>
                             </div>
                         </td>
                         <td class="px-5 py-4 text-sm">{{ $item->accessory?->name }}</td>

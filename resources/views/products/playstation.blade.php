@@ -20,7 +20,7 @@
                 <article class="product-card">
                     <div class="product-image">
                         @if($type->image)
-                            <img src="{{ asset('storage/' . $type->image) }}" alt="{{ $type->name }}">
+                            <img src="{{ $type->image_url }}" alt="{{ $type->name }}">
                         @else
                             <i class="fas fa-gamepad text-5xl text-slate-400" aria-hidden="true"></i>
                         @endif

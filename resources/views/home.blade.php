@@ -6,10 +6,12 @@
 @php
     $currentUser = auth()->user();
     $isAdmin = $currentUser && method_exists($currentUser, 'isAdmin') ? $currentUser->isAdmin() : (($currentUser->role ?? null) === 'admin');
-    $heroImage = asset('images/ps5/ps5.jpg.png');
-    $carouselImages = collect(glob(public_path('images/carousel/*.{jpg,jpeg,png,webp}'), GLOB_BRACE))
-        ->map(fn ($path) => asset(str_replace(public_path() . DIRECTORY_SEPARATOR, '', $path)))
-        ->values();
+    $heroImage = asset('images/hero/dhimas-hero-primary.png');
+    $carouselImages = collect([
+        asset('images/hero/dhimas-hero-primary.png'),
+        asset('images/hero/dhimas-hero-logo.png'),
+        asset('images/hero/dhimas-hero-services.png'),
+    ]);
 @endphp
 
 <section class="bg-white">
@@ -45,21 +47,49 @@
                         <p class="mt-1 text-xs font-medium uppercase tracking-wide text-slate-500">Tipe konsol</p>
                     </div>
                     <div class="surface-panel p-4">
-                        <p class="text-2xl font-semibold text-slate-950">{{ $accessories->count() }}</p>
+                        <p class="text-2xl font-semibold text-slate-950">{{ $accessoriesCount ?? $accessories->count() }}</p>
                         <p class="mt-1 text-xs font-medium uppercase tracking-wide text-slate-500">Aksesoris</p>
                     </div>
                 </div>
             </div>
 
-            <div class="relative">
-                <div class="aspect-[4/3] overflow-hidden rounded-xl border border-slate-200 bg-slate-100 shadow-sm">
-                    <img src="{{ $carouselImages->first() ?? $heroImage }}" alt="PlayStation tersedia untuk rental" class="h-full w-full object-cover">
+            <div
+                class="relative"
+                x-data="{
+                    active: 0,
+                    images: @js($carouselImages->values()),
+                    timer: null,
+                    start() {
+                        this.timer = setInterval(() => {
+                            this.active = (this.active + 1) % this.images.length;
+                        }, 4200);
+                    },
+                    choose(index) {
+                        this.active = index;
+                        clearInterval(this.timer);
+                        this.start();
+                    }
+                }"
+                x-init="start()"
+            >
+                <div class="relative aspect-square overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                    <img
+                        :src="images[active]"
+                        alt="Dhimas Dhika PS rental PlayStation"
+                        class="absolute inset-0 h-full w-full object-contain"
+                    >
                 </div>
                 <div class="mt-4 grid grid-cols-3 gap-3">
-                    @foreach(($carouselImages->take(3)->isNotEmpty() ? $carouselImages->take(3) : collect([$heroImage, $heroImage, $heroImage])) as $image)
-                        <div class="aspect-[4/3] overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
-                            <img src="{{ $image }}" alt="Galeri PlayHub" class="h-full w-full object-cover">
-                        </div>
+                    @foreach(($carouselImages->take(3)->isNotEmpty() ? $carouselImages->take(3) : collect([$heroImage, $heroImage, $heroImage])) as $index => $image)
+                        <button
+                            type="button"
+                            class="aspect-square overflow-hidden rounded-lg border bg-white p-0 transition hover:border-sky-300"
+                            :class="active === {{ $index }} ? 'border-sky-500 ring-2 ring-sky-500 ring-offset-2' : 'border-slate-200'"
+                            @click="choose({{ $index }})"
+                            aria-label="Tampilkan hero {{ $index + 1 }}"
+                        >
+                            <img src="{{ $image }}" alt="Galeri PlayHub {{ $index + 1 }}" class="h-full w-full object-contain">
+                        </button>
                     @endforeach
                 </div>
             </div>
@@ -83,7 +113,7 @@
                 <article class="product-card">
                     <div class="product-image">
                         @if($type->image)
-                            <img src="{{ asset('storage/' . $type->image) }}" alt="{{ $type->name }}">
+                            <img src="{{ $type->image_url }}" alt="{{ $type->name }}">
                         @else
                             <i class="fas fa-gamepad text-5xl text-slate-400" aria-hidden="true"></i>
                         @endif
@@ -134,7 +164,7 @@
                 <article class="product-card">
                     <div class="product-image">
                         @if($accessory->image)
-                            <img src="{{ asset('storage/' . $accessory->image) }}" alt="{{ $accessory->name }}">
+                            <img src="{{ $accessory->image_url }}" alt="{{ $accessory->name }}">
                         @else
                             <i class="fas fa-headphones text-5xl text-slate-400" aria-hidden="true"></i>
                         @endif
@@ -153,12 +183,11 @@
                                 Edit aksesoris
                             </a>
                         @else
-                            <form action="{{ route('cart.add') }}" method="POST" class="mt-4 flex gap-2">
+                            <form action="{{ route('cart.add') }}" method="POST" class="mt-4">
                                 @csrf
                                 <input type="hidden" name="accessory_id" value="{{ $accessory->id }}">
-                                <label class="sr-only" for="quantity-{{ $accessory->id }}">Jumlah</label>
-                                <input id="quantity-{{ $accessory->id }}" type="number" name="quantity" value="1" min="1" max="{{ $accessory->stock }}" class="w-20 rounded-lg border-slate-300 text-sm focus:border-sky-500 focus:ring-sky-500">
-                                <button type="submit" class="btn btn-primary flex-1 text-sm">
+                                <input type="hidden" name="quantity" value="1">
+                                <button type="submit" class="btn btn-primary w-full text-sm">
                                     <i class="fas fa-cart-plus mr-2" aria-hidden="true"></i>
                                     Keranjang
                                 </button>

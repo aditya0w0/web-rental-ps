@@ -42,6 +42,10 @@ class PlaystationType extends Model
 
     public function getImageUrlAttribute(): string
     {
-        return $this->image ? asset('storage/' . $this->image) : asset('images/default-ps.png');
+        if ($this->image && str_starts_with($this->image, 'images/')) {
+            return asset($this->image);
+        }
+
+        return $this->image ? asset('storage/' . $this->image) : asset('images/products/playstation-5.png');
     }
 }

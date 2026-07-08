@@ -9,9 +9,8 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex h-16 items-center justify-between gap-4">
             <div class="flex min-w-0 items-center">
-                <a href="{{ $homeRoute }}" class="flex items-center gap-3 rounded-lg">
-                    <x-application-logo class="block h-10 w-auto fill-current text-slate-950" />
-                    <span class="text-lg font-semibold tracking-normal text-slate-950">PlayHub</span>
+                <a href="{{ $homeRoute }}" class="flex items-center rounded-lg">
+                    <x-application-logo class="block h-12 w-auto max-w-[11rem]" />
                 </a>
 
                 <div class="hidden sm:ms-8 sm:flex sm:items-center sm:gap-1">
@@ -28,6 +27,9 @@
                         </x-nav-link>
                         <x-nav-link :href="route('admin.playstation-types.index')" :active="request()->routeIs('admin.playstation-types.*') || request()->routeIs('admin.playstation-units.*') || request()->routeIs('admin.accessories.*')">
                             Inventory
+                        </x-nav-link>
+                        <x-nav-link :href="route('admin.article-comments.index')" :active="request()->routeIs('admin.article-comments.*')">
+                            Comments
                         </x-nav-link>
                         @if($isOwner)
                         <x-nav-link :href="route('admin.admin-users.index')" :active="request()->routeIs('admin.admin-users.*')">
@@ -142,6 +144,7 @@
                 @endif
                 <x-responsive-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.*')">Reports</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.shipping.index')" :active="request()->routeIs('admin.shipping.*')">Shipping</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.article-comments.index')" :active="request()->routeIs('admin.article-comments.*')">Article Comments</x-responsive-nav-link>
                 @else
                 <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">Dashboard</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('products.playstation')" :active="request()->routeIs('products.playstation') || request()->routeIs('rent.*')">Rent PS</x-responsive-nav-link>

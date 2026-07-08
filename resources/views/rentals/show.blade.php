@@ -12,7 +12,7 @@
     <div class="bg-white shadow-md rounded-lg p-6 mb-6">
         <div class="flex items-start gap-6">
             <div class="w-48 h-48 sm:w-56 sm:h-56 flex-shrink-0">
-                <img class="w-full h-full object-cover rounded-lg" src="{{ optional($rental->type)->image ? asset('storage/' . $rental->type->image) : (method_exists($rental->type, 'getImageUrlAttribute') ? $rental->type->image_url : 'https://via.placeholder.com/300x300') }}" alt="{{ $rental->type?->name }}"/>
+                <img class="w-full h-full object-cover rounded-lg" src="{{ $rental->type?->image_url ?? asset('images/products/playstation-5.png') }}" alt="{{ $rental->type?->name }}"/>
             </div>
             <div class="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>

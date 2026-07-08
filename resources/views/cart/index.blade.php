@@ -44,7 +44,7 @@
                             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                                 <div class="flex items-center">
                                     <div class="flex-shrink-0 w-20 h-20">
-                                        <img class="w-full h-full rounded-md" src="{{ $item->accessory->image ? asset('storage/' . $item->accessory->image) : 'https://via.placeholder.com/150' }}" alt="{{ $item->accessory->name }}"/>
+                                            <img class="w-full h-full rounded-md" src="{{ $item->accessory->image_url }}" alt="{{ $item->accessory->name }}"/>
                                     </div>
                                     <div class="ml-4">
                                         <p class="text-gray-900 whitespace-no-wrap">{{ $item->accessory->name }}</p>

@@ -7,6 +7,8 @@ use App\Http\Controllers\HomeController;
 // === HALAMAN DEPAN (USER) ===
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/articles/{slug}', [\App\Http\Controllers\ArticlePublicController::class, 'show'])->name('articles.show');
+Route::post('/articles/{article:slug}/comments', [\App\Http\Controllers\ArticleCommentController::class, 'store'])->name('articles.comments.store');
+Route::post('/articles/{article:slug}/reactions', [\App\Http\Controllers\ArticleReactionController::class, 'toggle'])->name('articles.reactions.toggle');
 
 Route::get('/flowchart', function () {
     return view('flowcharts.system');
@@ -181,6 +183,14 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::patch('/order-issues/{issue}/respond', [\App\Http\Controllers\Admin\OrderIssueController::class, 'respond'])
         ->name('admin.order-issues.respond');
 
+    Route::get('/article-comments', [\App\Http\Controllers\Admin\ArticleCommentController::class, 'index'])
+        ->name('admin.article-comments.index');
+    Route::patch('/article-comments/{comment}/approve', [\App\Http\Controllers\Admin\ArticleCommentController::class, 'approve'])
+        ->name('admin.article-comments.approve');
+    Route::patch('/article-comments/{comment}/flag', [\App\Http\Controllers\Admin\ArticleCommentController::class, 'flag'])
+        ->name('admin.article-comments.flag');
+    Route::patch('/article-comments/{comment}/delete-trace', [\App\Http\Controllers\Admin\ArticleCommentController::class, 'destroyTrace'])
+        ->name('admin.article-comments.destroy-trace');
     // Articles
     Route::resource('articles', \App\Http\Controllers\Admin\ArticleController::class)
         ->except(['show'])

@@ -12,9 +12,8 @@
     <body class="font-sans antialiased bg-slate-100 text-slate-900">
         <main class="min-h-screen px-4 py-8">
             <div class="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-md flex-col justify-center">
-                <a href="{{ route('home') }}" class="mb-6 inline-flex items-center gap-3 self-start">
-                    <x-application-logo class="h-10 w-auto" />
-                    <span class="text-lg font-semibold text-slate-950">PlayHub</span>
+                <a href="{{ route('home') }}" class="mb-6 inline-flex items-center self-start">
+                    <x-application-logo class="h-14 w-auto max-w-[13rem]" />
                 </a>
                 <section class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
                     {{ $slot }}

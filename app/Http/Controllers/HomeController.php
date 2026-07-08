@@ -11,9 +11,12 @@ class HomeController extends Controller
     public function index()
     {
         $playstationTypes = PlaystationType::where('is_active', true)->get();
-        $accessories = Accessory::where('is_active', true)
-            ->where('stock', '>', 0)
-            ->limit(8)
+        $availableAccessories = Accessory::where('is_active', true)
+            ->where('stock', '>', 0);
+
+        $accessoriesCount = (clone $availableAccessories)->count();
+        $accessories = (clone $availableAccessories)
+            ->limit(4)
             ->get();
 
         $articles = Article::where('is_published', true)
@@ -22,6 +25,6 @@ class HomeController extends Controller
             ->limit(3)
             ->get();
 
-        return view('home', compact('playstationTypes', 'accessories', 'articles'));
+        return view('home', compact('playstationTypes', 'accessories', 'accessoriesCount', 'articles'));
     }
 }

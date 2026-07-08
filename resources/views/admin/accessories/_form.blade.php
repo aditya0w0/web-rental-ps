@@ -50,7 +50,7 @@
         <input type="file" name="image" id="image" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100">
         @if($accessory->image)
             <div class="mt-4">
-                <img src="{{ asset('storage/' . $accessory->image) }}" alt="{{ $accessory->name }}" class="h-32 w-auto object-cover rounded-md">
+                    <img src="{{ $accessory->image_url }}" alt="{{ $accessory->name }}" class="h-32 w-auto object-cover rounded-md">
             </div>
         @endif
     </div>
