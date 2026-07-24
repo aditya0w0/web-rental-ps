@@ -21,9 +21,15 @@ class RoleMiddleware
         }
         
         foreach ($roles as $role) {
-            if ($user->role === $role) {
+            if ($user->role === $role || ($role === 'admin' && in_array($user->role, ['owner', 'admin'], true))) {
                 return $next($request);
             }
+        }
+
+        if (in_array($user->role, ['owner', 'admin'], true)) {
+            return redirect()
+                ->route('admin.dashboard')
+                ->with('error', 'Admin accounts use the admin dashboard for management.');
         }
 
         abort(403, 'Unauthorized action.');

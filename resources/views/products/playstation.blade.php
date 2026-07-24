@@ -1,44 +1,57 @@
 @extends('layouts.app')
 
-@section('title', 'Rent PlayStation')
+@section('title', 'Rental PlayStation - PlayHub')
 
 @section('content')
-<div class="bg-gray-50">
-    <div class="container mx-auto px-4 py-12">
-        <div class="text-center mb-12">
-            <h1 class="text-4xl font-bold text-gray-800">Rent a PlayStation</h1>
-            <p class="text-lg text-gray-600 mt-2">Choose from our available PlayStation consoles.</p>
+@php
+    $currentUser = auth()->user();
+    $isAdmin = $currentUser && method_exists($currentUser, 'isAdmin') ? $currentUser->isAdmin() : (($currentUser->role ?? null) === 'admin');
+@endphp
+<div class="bg-slate-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="mb-10">
+            <p class="section-eyebrow">Konsol</p>
+            <h1 class="section-title">{{ $isAdmin ? 'Inventori PlayStation' : 'Rental PlayStation' }}</h1>
+            <p class="section-copy">{{ $isAdmin ? 'Pantau tipe konsol, stok unit, dan harga dari sisi operasional.' : 'Bandingkan harga per jam atau per hari, lalu pilih jadwal rental.' }}</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             @forelse($playstationTypes as $type)
-                <div class="bg-white rounded-lg shadow-lg overflow-hidden transform hover:scale-105 transition-transform duration-300">
-                    <div class="relative">
-                        <img src="{{ $type->image ? asset('storage/' . $type->image) : 'https://via.placeholder.com/400x300' }}" alt="{{ $type->name }}" class="w-full h-64 object-cover">
-                        <div class="absolute top-0 right-0 bg-emerald-600 text-white px-3 py-1 m-2 rounded-md text-sm font-semibold">PS</div>
+                <article class="product-card">
+                    <div class="product-image">
+                        @if($type->image)
+                            <img src="{{ $type->image_url }}" alt="{{ $type->name }}">
+                        @else
+                            <i class="fas fa-gamepad text-5xl text-slate-400" aria-hidden="true"></i>
+                        @endif
                     </div>
-                    <div class="p-6">
-                        <h3 class="text-2xl font-bold text-gray-800 mb-2">{{ $type->name }}</h3>
-                        <p class="text-gray-600 mb-4 h-24 overflow-hidden">{{ $type->description }}</p>
-                        
-                        <div class="flex justify-between items-center mb-4">
+                    <div class="p-6 flex flex-col flex-1">
+                        <div class="flex items-start justify-between gap-3">
+                            <h2 class="text-xl font-semibold text-slate-950">{{ $type->name }}</h2>
+                            <span class="status-pill">{{ $type->available_units }} unit</span>
+                        </div>
+                        <p class="mt-3 text-sm leading-6 text-slate-600 flex-1">{{ $type->description }}</p>
+
+                        <div class="mt-6 grid grid-cols-2 gap-4">
                             <div>
-                                <p class="text-sm text-gray-500">Price per Hour</p>
-                                <p class="text-lg font-bold text-emerald-600">Rp {{ number_format($type->rental_price_per_hour, 0, ',', '.') }}</p>
+                                <p class="text-sm text-slate-500">Per jam</p>
+                                <p class="text-lg font-semibold text-slate-950">Rp {{ number_format($type->rental_price_per_hour, 0, ',', '.') }}</p>
                             </div>
                             <div>
-                                <p class="text-sm text-gray-500">Price per Day</p>
-                                <p class="text-lg font-bold text-emerald-600">Rp {{ number_format($type->rental_price_per_day, 0, ',', '.') }}</p>
+                                <p class="text-sm text-slate-500">Per hari</p>
+                                <p class="text-lg font-semibold text-slate-950">Rp {{ number_format($type->rental_price_per_day, 0, ',', '.') }}</p>
                             </div>
                         </div>
 
-                        <a href="{{ route('rent.create', $type) }}" class="block w-full text-center btn btn-primary">Rent Now</a>
+                        @if($isAdmin)
+                            <a href="{{ route('admin.playstation-types.edit', $type) }}" class="btn btn-secondary mt-6 w-full">Edit tipe konsol</a>
+                        @else
+                            <a href="{{ route('rent.create', $type) }}" class="btn btn-primary mt-6 w-full">Rental sekarang</a>
+                        @endif
                     </div>
-                </div>
+                </article>
             @empty
-                <div class="col-span-full text-center py-12">
-                    <p class="text-xl text-gray-500">No PlayStation consoles available at the moment.</p>
-                </div>
+                <div class="empty-state">Belum ada PlayStation yang tersedia.</div>
             @endforelse
         </div>
 

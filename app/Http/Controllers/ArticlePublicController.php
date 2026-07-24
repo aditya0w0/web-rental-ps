@@ -3,45 +3,55 @@
 namespace App\Http\Controllers;
 
 use App\Models\Article;
+use App\Models\ArticleReaction;
 
 class ArticlePublicController extends Controller
 {
     public function show(string $slug)
     {
-        $article = Article::where('slug', $slug)->first();
-        if (!$article) {
-            $samples = [
-                'tips-merawat-stick-dualsense-agar-awet' => [
-                    'title' => 'Tips Merawat Stick DualSense agar Awet',
-                    'excerpt' => 'Cara sederhana menjaga stick tetap prima untuk sesi gaming panjang.',
-                    'body' => 'Bersihkan analog secara berkala, hindari menekan terlalu keras, dan simpan di tempat kering. Gunakan charging dock resmi agar arus stabil.',
-                    'author_name' => 'PlayHub',
-                    'image' => 'https://images.unsplash.com/photo-1601935113643-1d3e98d9c3ce?q=80&w=1600&auto=format&fit=crop',
-                    'published_at' => now(),
-                ],
-                'game-ps5-terbaik-untuk-multiplayer-keluarga' => [
-                    'title' => 'Game PS5 Terbaik untuk Multiplayer Keluarga',
-                    'excerpt' => 'Rekomendasi seru untuk dimainkan bareng keluarga.',
-                    'body' => 'Coba Sackboy: A Big Adventure, Overcooked! All You Can Eat, dan It Takes Two untuk kolaborasi menyenangkan.',
-                    'author_name' => 'PlayHub',
-                    'image' => 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?q=80&w=1600&auto=format&fit=crop',
-                    'published_at' => now()->subDay(),
-                ],
-                'setting-jitu-koneksi-wifi-untuk-ps5' => [
-                    'title' => 'Setting Jitu Koneksi Wi‑Fi untuk PS5',
-                    'excerpt' => 'Minimkan lag saat main online dengan langkah praktis.',
-                    'body' => 'Gunakan band 5 GHz, dekatkan konsol ke router, dan aktifkan QoS untuk port PlayStation agar prioritas bandwidth aman.',
-                    'author_name' => 'PlayHub',
-                    'image' => 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1600&auto=format&fit=crop',
-                    'published_at' => now()->subDays(2),
-                ],
-            ];
-            if (isset($samples[$slug])) {
-                $a = (object) $samples[$slug];
-                return view('articles.show', ['article' => $a]);
-            }
-            abort(404);
+        $article = Article::where('slug', $slug)
+            ->where('is_published', true)
+            ->whereNotNull('published_at')
+            ->firstOrFail();
+
+        $comments = $article->comments()
+            ->visible()
+            ->with('user')
+            ->oldest()
+            ->get();
+
+        $reactionTypes = ArticleReaction::TYPES;
+        $reactionCounts = $article->reactions()
+            ->selectRaw('type, count(*) as total')
+            ->groupBy('type')
+            ->pluck('total', 'type');
+
+        $activeReactions = collect();
+        $user = request()->user();
+        $guestToken = request()->cookie('article_guest_token') ?: request()->session()->get('article_guest_token');
+
+        if ($user) {
+            $activeReactions = $article->reactions()
+                ->where('user_id', $user->id)
+                ->pluck('type');
+        } elseif ($guestToken) {
+            $activeReactions = $article->reactions()
+                ->where('guest_token_hash', hash('sha256', $guestToken))
+                ->pluck('type');
         }
-        return view('articles.show', compact('article'));
+
+        $guestIdentity = [
+            'name' => request()->cookie('article_guest_name'),
+            'email' => request()->cookie('article_guest_email'),
+        ];
+
+        return view('articles.show', compact(
+            'article',
+            'comments',
+            'reactionTypes',
+            'reactionCounts',
+            'activeReactions',
+            'guestIdentity'
+        ));
     }
 }

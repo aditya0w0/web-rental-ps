@@ -18,6 +18,7 @@ class PlaystationTypeSeeder extends Seeder
                 'description' => 'Konsol game generasi terbaru dari Sony dengan performa tinggi',
                 'rental_price_per_hour' => 15000,
                 'rental_price_per_day' => 120000,
+                'image' => 'images/products/playstation-5.png',
                 'is_active' => true
             ],
             [
@@ -25,6 +26,7 @@ class PlaystationTypeSeeder extends Seeder
                 'description' => 'PS4 dengan performa enhanced dan grafis 4K',
                 'rental_price_per_hour' => 10000,
                 'rental_price_per_day' => 80000,
+                'image' => 'images/products/playstation-4-pro.png',
                 'is_active' => true
             ],
             [
@@ -32,6 +34,7 @@ class PlaystationTypeSeeder extends Seeder
                 'description' => 'PS4 versi slim yang lebih ringkas dan hemat energi',
                 'rental_price_per_hour' => 8000,
                 'rental_price_per_day' => 60000,
+                'image' => 'images/products/playstation-4-slim.png',
                 'is_active' => true
             ],
             [
@@ -39,12 +42,13 @@ class PlaystationTypeSeeder extends Seeder
                 'description' => 'Konsol klasik dengan banyak game legendaris',
                 'rental_price_per_hour' => 5000,
                 'rental_price_per_day' => 35000,
+                'image' => 'images/products/playstation-3.png',
                 'is_active' => true
             ]
         ];
 
         foreach ($types as $type) {
-            PlaystationType::create($type);
+            PlaystationType::updateOrCreate(['name' => $type['name']], $type);
         }
     }
 }

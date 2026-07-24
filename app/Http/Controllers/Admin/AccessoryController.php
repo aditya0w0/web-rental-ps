@@ -82,6 +82,15 @@ class AccessoryController extends Controller
 
     public function destroy(Accessory $accessory)
     {
+        if ($accessory->orderItems()->exists() || $accessory->rentalAccessories()->exists()) {
+            $accessory->update(['is_active' => false]);
+
+            return redirect()->route('admin.accessories.index')
+                             ->with('success', 'Accessory has order history, so it was deactivated instead of deleted.');
+        }
+
+        $accessory->cartItems()->delete();
+
         if ($accessory->image) {
             Storage::disk('public')->delete($accessory->image);
         }

@@ -21,6 +21,7 @@ class AccessorySeeder extends Seeder
                 'price' => 1200000,
                 'stock' => 10,
                 'brand' => 'Sony',
+                'image' => 'images/products/dualsense-wireless-controller-ps5.png',
                 'is_active' => true
             ],
             [
@@ -30,6 +31,7 @@ class AccessorySeeder extends Seeder
                 'price' => 800000,
                 'stock' => 15,
                 'brand' => 'Sony',
+                'image' => 'images/products/dualshock-4-wireless-controller.png',
                 'is_active' => true
             ],
             // Kabel
@@ -40,6 +42,7 @@ class AccessorySeeder extends Seeder
                 'price' => 150000,
                 'stock' => 20,
                 'brand' => 'Belkin',
+                'image' => 'images/products/hdmi-cable-2-1-2-meter.png',
                 'is_active' => true
             ],
             [
@@ -49,6 +52,7 @@ class AccessorySeeder extends Seeder
                 'price' => 75000,
                 'stock' => 25,
                 'brand' => 'Sony',
+                'image' => 'images/products/usb-c-charging-cable-ps5.png',
                 'is_active' => true
             ],
             // Headset
@@ -59,6 +63,7 @@ class AccessorySeeder extends Seeder
                 'price' => 1800000,
                 'stock' => 8,
                 'brand' => 'Sony',
+                'image' => 'images/products/pulse-3d-wireless-headset.png',
                 'is_active' => true
             ],
             [
@@ -68,6 +73,7 @@ class AccessorySeeder extends Seeder
                 'price' => 600000,
                 'stock' => 12,
                 'brand' => 'HyperX',
+                'image' => 'images/products/gaming-headset-hyperx-cloud-stinger.png',
                 'is_active' => true
             ],
             // Kaset Game
@@ -78,6 +84,7 @@ class AccessorySeeder extends Seeder
                 'price' => 900000,
                 'stock' => 5,
                 'brand' => 'EA Sports',
+                'image' => 'images/products/game-fifa-24-ps5.png',
                 'is_active' => true
             ],
             [
@@ -87,6 +94,7 @@ class AccessorySeeder extends Seeder
                 'price' => 800000,
                 'stock' => 7,
                 'brand' => 'Insomniac Games',
+                'image' => 'images/products/game-spider-man-2-ps5.png',
                 'is_active' => true
             ],
             // Lainnya
@@ -97,6 +105,7 @@ class AccessorySeeder extends Seeder
                 'price' => 450000,
                 'stock' => 6,
                 'brand' => 'Sony',
+                'image' => 'images/products/ps5-dualsense-charging-station.png',
                 'is_active' => true
             ],
             [
@@ -106,12 +115,13 @@ class AccessorySeeder extends Seeder
                 'price' => 350000,
                 'stock' => 8,
                 'brand' => 'Sony',
+                'image' => 'images/products/ps5-media-remote.png',
                 'is_active' => true
             ]
         ];
 
         foreach ($accessories as $accessory) {
-            Accessory::create($accessory);
+            Accessory::updateOrCreate(['name' => $accessory['name']], $accessory);
         }
     }
 }

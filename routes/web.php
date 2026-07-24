@@ -3,11 +3,12 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\HomeController;
-use Illuminate\Support\Facades\URL;
 
 // === HALAMAN DEPAN (USER) ===
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/articles/{slug}', [\App\Http\Controllers\ArticlePublicController::class, 'show'])->name('articles.show');
+Route::post('/articles/{article:slug}/comments', [\App\Http\Controllers\ArticleCommentController::class, 'store'])->name('articles.comments.store');
+Route::post('/articles/{article:slug}/reactions', [\App\Http\Controllers\ArticleReactionController::class, 'toggle'])->name('articles.reactions.toggle');
 
 Route::get('/flowchart', function () {
     return view('flowcharts.system');
@@ -49,7 +50,7 @@ use App\Http\Controllers\UserRentalController;
 use App\Http\Controllers\RentalReminderController;
 use App\Http\Controllers\OrderIssueController;
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'role:customer'])->group(function () {
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
     Route::get('/cart/checkout', [CartController::class, 'checkoutForm'])->name('cart.checkout.form');
     Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
@@ -70,8 +71,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/my-rentals/{rental}', [UserRentalController::class, 'show'])->name('user.rentals.show');
     Route::get('/rentals/{rental}/payment', [UserRentalController::class, 'payment'])->name('rentals.payment');
     Route::patch('/rentals/{rental}/payment', [UserRentalController::class, 'processPayment'])->name('rentals.payment.process');
-    Route::get('/rentals/reminders/send', [RentalReminderController::class, 'send'])->middleware('admin')->name('rentals.reminders.send');
-
     Route::get('/orders/{order}/issue', [OrderIssueController::class, 'create'])->name('orders.issue.create');
     Route::post('/orders/{order}/issue', [OrderIssueController::class, 'store'])->name('orders.issue.store');
 });
@@ -91,6 +90,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/pdf', [ReportController::class, 'exportPdf'])->name('reports.export.pdf');
     Route::get('/reports/excel', [ReportController::class, 'exportExcel'])->name('reports.export.excel');
+    Route::get('/rentals/reminders/send', [RentalReminderController::class, 'send'])->name('rentals.reminders.send');
 });
 
 Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
@@ -99,36 +99,44 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
         ->name('admin.dashboard');
     Route::get('/sessions/active', [\App\Http\Controllers\Admin\DashboardController::class, 'activeSessions'])
         ->name('admin.sessions.active');
-    Route::get('/orders', [\App\Http\Controllers\Admin\OrderController::class, 'index'])
-        ->name('admin.orders.index');
+    Route::resource('admin-users', \App\Http\Controllers\Admin\AdminUserController::class)
+        ->middleware('role:owner')
+        ->only(['index', 'create', 'store', 'destroy'])
+        ->names([
+            'index' => 'admin.admin-users.index',
+            'create' => 'admin.admin-users.create',
+            'store' => 'admin.admin-users.store',
+            'destroy' => 'admin.admin-users.destroy',
+        ]);
+
     Route::resource('playstation-types', \App\Http\Controllers\Admin\PlaystationTypeController::class)
+        ->except(['show'])
         ->names([
             'index' => 'admin.playstation-types.index',
             'create' => 'admin.playstation-types.create',
             'store' => 'admin.playstation-types.store',
-            'show' => 'admin.playstation-types.show',
             'edit' => 'admin.playstation-types.edit',
             'update' => 'admin.playstation-types.update',
             'destroy' => 'admin.playstation-types.destroy',
         ]);
 
     Route::resource('playstation-units', \App\Http\Controllers\Admin\PlaystationUnitController::class)
+        ->except(['show'])
         ->names([
             'index' => 'admin.playstation-units.index',
             'create' => 'admin.playstation-units.create',
             'store' => 'admin.playstation-units.store',
-            'show' => 'admin.playstation-units.show',
             'edit' => 'admin.playstation-units.edit',
             'update' => 'admin.playstation-units.update',
             'destroy' => 'admin.playstation-units.destroy',
         ]);
 
     Route::resource('accessories', \App\Http\Controllers\Admin\AccessoryController::class)
+        ->except(['show'])
         ->names([
             'index' => 'admin.accessories.index',
             'create' => 'admin.accessories.create',
             'store' => 'admin.accessories.store',
-            'show' => 'admin.accessories.show',
             'edit' => 'admin.accessories.edit',
             'update' => 'admin.accessories.update',
             'destroy' => 'admin.accessories.destroy',
@@ -175,8 +183,17 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::patch('/order-issues/{issue}/respond', [\App\Http\Controllers\Admin\OrderIssueController::class, 'respond'])
         ->name('admin.order-issues.respond');
 
+    Route::get('/article-comments', [\App\Http\Controllers\Admin\ArticleCommentController::class, 'index'])
+        ->name('admin.article-comments.index');
+    Route::patch('/article-comments/{comment}/approve', [\App\Http\Controllers\Admin\ArticleCommentController::class, 'approve'])
+        ->name('admin.article-comments.approve');
+    Route::patch('/article-comments/{comment}/flag', [\App\Http\Controllers\Admin\ArticleCommentController::class, 'flag'])
+        ->name('admin.article-comments.flag');
+    Route::patch('/article-comments/{comment}/delete-trace', [\App\Http\Controllers\Admin\ArticleCommentController::class, 'destroyTrace'])
+        ->name('admin.article-comments.destroy-trace');
     // Articles
     Route::resource('articles', \App\Http\Controllers\Admin\ArticleController::class)
+        ->except(['show'])
         ->names([
             'index' => 'admin.articles.index',
             'create' => 'admin.articles.create',
@@ -185,18 +202,9 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
             'update' => 'admin.articles.update',
             'destroy' => 'admin.articles.destroy',
         ]);
-});
 
-
-
-// === LOGIN (PAKAI LARAVEL BREEZE / FORTIFY) ===
-// Kalau pakai Breeze, cukup ini:
-require __DIR__.'/auth.php';
-
-// === TEST NOTIFICATION ===
-use App\Http\Controllers\NotificationController;
-Route::get('/send-test-notification', [NotificationController::class, 'sendTestNotification']);
     Route::resource('shipping', \App\Http\Controllers\Admin\ShippingRateController::class)
+        ->except(['show'])
         ->parameters(['shipping' => 'shipping'])
         ->names([
             'index' => 'admin.shipping.index',
@@ -206,5 +214,13 @@ Route::get('/send-test-notification', [NotificationController::class, 'sendTestN
             'update' => 'admin.shipping.update',
             'destroy' => 'admin.shipping.destroy',
         ]);
+});
+
+Route::middleware('auth')->group(function () {
     Route::get('/shipping/rates', [\App\Http\Controllers\ShippingRateApiController::class, 'list'])->name('shipping.rates');
     Route::get('/api/distance', [\App\Http\Controllers\GeocodeController::class, 'distance'])->name('api.distance');
+});
+
+// === LOGIN (PAKAI LARAVEL BREEZE / FORTIFY) ===
+// Kalau pakai Breeze, cukup ini:
+require __DIR__.'/auth.php';

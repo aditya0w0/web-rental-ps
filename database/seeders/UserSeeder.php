@@ -13,10 +13,17 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
+        User::updateOrCreate(['email' => 'owner@playhub.com'], [
+            'name' => 'Owner PlayHub',
+            'password' => Hash::make('owner123'),
+            'role' => 'owner',
+            'phone' => '081234567889',
+            'address' => 'Jl. Owner No. 1, Jakarta'
+        ]);
+
         // Buat admin user
-        User::create([
+        User::updateOrCreate(['email' => 'admin@playhub.com'], [
             'name' => 'Admin PlayHub',
-            'email' => 'admin@playhub.com',
             'password' => Hash::make('admin123'),
             'role' => 'admin',
             'phone' => '081234567890',
@@ -52,7 +59,7 @@ class UserSeeder extends Seeder
         ];
 
         foreach ($customers as $customer) {
-            User::create($customer);
+            User::updateOrCreate(['email' => $customer['email']], $customer);
         }
     }
 }

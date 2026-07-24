@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             PlaystationTypeSeeder::class,
             PlaystationUnitSeeder::class,
             AccessorySeeder::class,
+            ArticleSeeder::class,
         ]);
     }
 }

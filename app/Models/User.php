@@ -52,7 +52,12 @@ class User extends Authenticatable
 
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return in_array($this->role, ['owner', 'admin'], true);
+    }
+
+    public function isOwner(): bool
+    {
+        return $this->role === 'owner';
     }
 
     public function isCustomer(): bool

@@ -14,7 +14,7 @@
     }
 @endphp
 @if($src)
-    <img src="{{ $src }}" alt="PlayHub" {{ $attributes->merge(['class' => 'h-12 w-auto']) }} />
+    <img src="{{ $src }}" alt="Dhimas Dhika PS" {{ $attributes->merge(['class' => 'h-12 w-auto object-contain']) }} />
 @else
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" {{ $attributes }}>
   <g fill="currentColor">

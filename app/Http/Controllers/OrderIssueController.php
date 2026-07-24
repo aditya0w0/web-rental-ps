@@ -15,11 +15,19 @@ class OrderIssueController extends Controller
             ->with('order')
             ->latest()
             ->paginate(15);
+
+        $issues->getCollection()->each->syncSlaStatus();
+
         return view('orders.issues.index', compact('issues'));
     }
+
     public function create(Order $order)
     {
         $this->authorize('view', $order);
+        if (!$this->canCreateIssue($order)) {
+            return redirect()->route('orders.show', $order)->with('error', $this->issueUnavailableMessage($order));
+        }
+
         return view('orders.issue', compact('order'));
     }
 
@@ -34,12 +42,8 @@ class OrderIssueController extends Controller
             'contact_phone' => 'required|string|min:8|max:20',
         ]);
 
-        if (($order->fulfillment_status ?? 'none') !== 'completed' || !$order->delivered_at) {
-            return redirect()->route('orders.show', $order)->with('error', 'Keluhan hanya dapat diajukan setelah order selesai (Completed).');
-        }
-        $deadline = $order->delivered_at->copy()->addHours(24);
-        if (now()->gt($deadline)) {
-            return redirect()->route('orders.show', $order)->with('error', 'Batas waktu pengajuan keluhan telah lewat (24 jam setelah order Completed).');
+        if (!$this->canCreateIssue($order)) {
+            return redirect()->route('orders.show', $order)->with('error', $this->issueUnavailableMessage($order));
         }
 
         $paths = [];
@@ -64,11 +68,29 @@ class OrderIssueController extends Controller
             \App\Models\OrderIssuePhoto::create(['order_issue_id' => $issue->id, 'path' => $p]);
         }
 
-        $admins = \App\Models\User::where('role','admin')->get();
+        $admins = \App\Models\User::whereIn('role', ['owner', 'admin'])->get();
         foreach ($admins as $admin) {
             $admin->notify(new \App\Notifications\NewOrderIssueSubmitted($issue));
         }
 
         return redirect()->route('orders.show', $order)->with('success', 'Keluhan telah dikirim. Admin akan menindaklanjuti.');
+    }
+
+    private function canCreateIssue(Order $order): bool
+    {
+        if (($order->fulfillment_status ?? 'none') !== 'completed' || !$order->delivered_at) {
+            return false;
+        }
+
+        return now()->lte($order->delivered_at->copy()->addHours(24));
+    }
+
+    private function issueUnavailableMessage(Order $order): string
+    {
+        if (($order->fulfillment_status ?? 'none') !== 'completed' || !$order->delivered_at) {
+            return 'Keluhan aktif setelah order selesai dan barang diterima.';
+        }
+
+        return 'Batas waktu pengajuan keluhan telah lewat (24 jam setelah order Completed).';
     }
 }

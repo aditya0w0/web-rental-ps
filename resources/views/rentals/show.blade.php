@@ -12,7 +12,7 @@
     <div class="bg-white shadow-md rounded-lg p-6 mb-6">
         <div class="flex items-start gap-6">
             <div class="w-48 h-48 sm:w-56 sm:h-56 flex-shrink-0">
-                <img class="w-full h-full object-cover rounded-lg" src="{{ optional($rental->type)->image ? asset('storage/' . $rental->type->image) : (method_exists($rental->type, 'getImageUrlAttribute') ? $rental->type->image_url : 'https://via.placeholder.com/300x300') }}" alt="{{ $rental->type?->name }}"/>
+                <img class="w-full h-full object-cover rounded-lg" src="{{ $rental->type?->image_url ?? asset('images/products/playstation-5.png') }}" alt="{{ $rental->type?->name }}"/>
             </div>
             <div class="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
@@ -51,7 +51,7 @@
 
     <div class="bg-white shadow-md rounded-lg p-6 mb-6">
         <h2 class="text-lg font-semibold text-gray-800 mb-4">Fulfillment Timeline</h2>
-        <div class="border-l-2 border-purple-600 pl-4">
+        <div class="border-l-2 border-sky-600 pl-4">
             <div class="mb-3">
                 <div class="font-semibold">Request Submitted</div>
                 <div class="text-sm text-gray-500">{{ $rental->created_at->format('d M Y, H:i') }}</div>
@@ -83,6 +83,27 @@
             </div>
         </div>
     </div>
+
+    @if($rental->accessories->isNotEmpty())
+        <div class="bg-white shadow-md rounded-lg p-6 mb-6">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">Aksesoris Rental</h2>
+            <div class="overflow-x-auto">
+                <table class="data-table">
+                    <thead><tr><th>Item</th><th>Qty</th><th>Harga</th><th>Subtotal</th></tr></thead>
+                    <tbody>
+                        @foreach($rental->accessories as $item)
+                            <tr>
+                                <td>{{ $item->accessory?->name }}</td>
+                                <td>{{ $item->quantity }}</td>
+                                <td>Rp {{ number_format($item->price, 0, ',', '.') }}</td>
+                                <td>Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    @endif
 
     @if($rental->payment_proof)
         <div class="bg-white shadow-md rounded-lg p-6 mb-6">

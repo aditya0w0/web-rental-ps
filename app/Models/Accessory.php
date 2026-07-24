@@ -32,6 +32,16 @@ class Accessory extends Model
         return $this->hasMany(CartItem::class);
     }
 
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    public function rentalAccessories(): HasMany
+    {
+        return $this->hasMany(RentalAccessory::class);
+    }
+
     public function transactionItems(): HasMany
     {
         return $this->hasMany(TransactionItem::class, 'item_id')->where('item_type', 'accessory');
@@ -58,6 +68,10 @@ class Accessory extends Model
 
     public function getImageUrlAttribute(): string
     {
-        return $this->image ? asset('storage/' . $this->image) : asset('images/default-accessory.png');
+        if ($this->image && str_starts_with($this->image, 'images/')) {
+            return asset($this->image);
+        }
+
+        return $this->image ? asset('storage/' . $this->image) : asset('images/products/dualsense-wireless-controller-ps5.png');
     }
 }

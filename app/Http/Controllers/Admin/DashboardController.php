@@ -53,12 +53,21 @@ class DashboardController extends Controller
             + (int) Order::where('status', 'pending')->count()
             + (int) Rental::where('status', 'pending')->count()
         );
+        $pendingOrdersCount = (int) Order::where('status', 'pending')->count();
+        $pendingRentalsCount = (int) Rental::where('status', 'pending')->count();
+        $pendingTransactionsCount = (int) Transaction::where('payment_status', 'pending')->count();
+        $paymentReviewCount = (int) Order::where('status', 'pending')->whereNotNull('payment_proof')->count()
+            + (int) Rental::whereIn('status', ['pending', 'confirmed'])->whereNotNull('payment_proof')->count();
 
         $stats = [
             'total_rentals' => Rental::count(),
             'active_rentals' => Rental::where('status', 'active')->count(),
             'total_transactions' => Transaction::count(),
             'pending_transactions' => $pendingPayments,
+            'pending_orders' => $pendingOrdersCount,
+            'pending_rentals' => $pendingRentalsCount,
+            'pending_legacy_transactions' => $pendingTransactionsCount,
+            'payment_review' => $paymentReviewCount,
             'available_units' => PlaystationUnit::where('status', 'available')->count(),
             'total_accessories' => Accessory::sum('stock'),
             'users_total' => User::count(),
@@ -66,15 +75,19 @@ class DashboardController extends Controller
             'users_this_month' => User::whereYear('created_at', Carbon::now()->year)->whereMonth('created_at', Carbon::now()->month)->count(),
         ];
 
+        $monthExpression = DB::connection()->getDriverName() === 'sqlite'
+            ? "CAST(strftime('%m', created_at) AS INTEGER)"
+            : 'MONTH(created_at)';
+
         // Monthly rental statistics
-        $monthlyRentals = Rental::selectRaw('MONTH(created_at) as month, COUNT(*) as count')
+        $monthlyRentals = Rental::selectRaw($monthExpression.' as month, COUNT(*) as count')
             ->whereYear('created_at', Carbon::now()->year)
             ->groupBy('month')
             ->orderBy('month')
             ->get();
 
         // Monthly transaction statistics (revenue)
-        $monthlyTransactions = Transaction::selectRaw('MONTH(created_at) as month, SUM(total_amount) as total')
+        $monthlyTransactions = Transaction::selectRaw($monthExpression.' as month, SUM(total_amount) as total')
             ->whereYear('created_at', Carbon::now()->year)
             ->where('payment_status', 'paid')
             ->groupBy('month')
@@ -82,7 +95,7 @@ class DashboardController extends Controller
             ->get();
 
         // Monthly orders (accessories) count
-        $monthlyOrders = Order::selectRaw('MONTH(created_at) as month, COUNT(*) as count')
+        $monthlyOrders = Order::selectRaw($monthExpression.' as month, COUNT(*) as count')
             ->whereYear('created_at', Carbon::now()->year)
             ->groupBy('month')
             ->orderBy('month')
@@ -138,8 +151,53 @@ class DashboardController extends Controller
             ->latest()
             ->limit(10)
             ->get();
+        $pendingOrderPayments = Order::with('user')
+            ->where('status', 'pending')
+            ->whereNotNull('payment_proof')
+            ->latest()
+            ->limit(8)
+            ->get()
+            ->map(function ($order) {
+                return [
+                    'type' => 'Order',
+                    'code' => $order->order_number,
+                    'customer' => $order->user?->name ?? '-',
+                    'amount' => (float) $order->total_price,
+                    'risk' => $order->payment_proof_risk ?? 'not_checked',
+                    'provider' => $order->payment_proof_provider ?? 'Unknown',
+                    'confidence' => (int) ($order->payment_proof_confidence ?? 0),
+                    'created_at' => $order->updated_at,
+                    'url' => route('admin.orders.show', $order),
+                ];
+            });
 
-        return view('admin.dashboard', compact('stats', 'monthlyRentals', 'monthlyTransactions', 'monthlyOrders', 'labels', 'rentalsSeries', 'ordersSeries', 'revenueSeries', 'totalRevenue', 'recentRentals', 'recentTransactions', 'recentOrders', 'lateRentals', 'lateFeeTotal'));
+        $pendingRentalPayments = Rental::with(['user', 'type'])
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->whereNotNull('payment_proof')
+            ->latest()
+            ->limit(8)
+            ->get()
+            ->map(function ($rental) {
+                return [
+                    'type' => 'Rental',
+                    'code' => '#' . $rental->id . ' ' . ($rental->type?->name ?? ''),
+                    'customer' => $rental->user?->name ?? '-',
+                    'amount' => (float) $rental->total_price,
+                    'risk' => $rental->payment_proof_risk ?? 'not_checked',
+                    'provider' => $rental->payment_proof_provider ?? 'Unknown',
+                    'confidence' => (int) ($rental->payment_proof_confidence ?? 0),
+                    'created_at' => $rental->updated_at,
+                    'url' => route('admin.rentals.show', $rental),
+                ];
+            });
+
+        $paymentQueue = $pendingOrderPayments
+            ->concat($pendingRentalPayments)
+            ->sortByDesc('created_at')
+            ->take(10)
+            ->values();
+
+        return view('admin.dashboard', compact('stats', 'monthlyRentals', 'monthlyTransactions', 'monthlyOrders', 'labels', 'rentalsSeries', 'ordersSeries', 'revenueSeries', 'totalRevenue', 'recentRentals', 'recentTransactions', 'recentOrders', 'lateRentals', 'lateFeeTotal', 'paymentQueue'));
     }
 
     public function activeSessions()

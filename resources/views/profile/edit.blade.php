@@ -1,36 +1,35 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Profile') }}
-        </h2>
-    </x-slot>
+@extends('layouts.app')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-8">
-                <aside class="hidden lg:block bg-white shadow-sm rounded-lg p-4 h-fit">
-                    <x-user-sidebar theme="light" />
-                </aside>
-                <div class="space-y-6">
-                    <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                        <div class="max-w-xl">
-                            @include('profile.partials.update-profile-information-form')
-                        </div>
-                    </div>
+@section('title', 'Profile Settings')
 
-                    <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                        <div class="max-w-xl">
-                            @include('profile.partials.update-password-form')
-                        </div>
-                    </div>
+@section('content')
+<div class="bg-slate-50">
+    <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <div class="mb-8">
+            <p class="section-eyebrow">Account</p>
+            <h1 class="section-title">Profile Settings</h1>
+            <p class="section-copy">Kelola identitas akun, password, dan keamanan akun PlayHub.</p>
+        </div>
 
-                    <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                        <div class="max-w-xl">
-                            @include('profile.partials.delete-user-form')
-                        </div>
-                    </div>
-                </div>
+        <div class="grid gap-6 lg:grid-cols-[260px_1fr]">
+            <aside class="h-fit rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
+                <x-user-sidebar />
+            </aside>
+
+            <div class="space-y-6">
+                <section class="card p-6">
+                    @include('profile.partials.update-profile-information-form')
+                </section>
+
+                <section class="card p-6">
+                    @include('profile.partials.update-password-form')
+                </section>
+
+                <section class="card border-rose-200 p-6">
+                    @include('profile.partials.delete-user-form')
+                </section>
             </div>
         </div>
     </div>
-</x-app-layout>
+</div>
+@endsection
